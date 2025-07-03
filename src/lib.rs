@@ -1,10 +1,10 @@
-use cpu::CPU;
-
 pub mod cpu;
+pub mod memory;
+pub mod opcodes;
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use super::cpu::CPU;
 
     #[test]
     fn test_0xa9_lda_immediate_load_data() {
