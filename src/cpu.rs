@@ -1,5 +1,5 @@
 use crate::memory::Memory;
-use crate::opcodes::AddressingMode;
+use crate::opcodes::{CPU_OPCODES, AddressingMode};
 
 pub struct CPU {
     pub register_a: u8,
@@ -98,20 +98,12 @@ impl CPU {
     }
 
     fn inx(&mut self) {
-        if self.register_x == u8::MAX {
-            self.register_x = 0;
-        } else {
-            self.register_x += 1;
-        }
+        self.register_x = self.register_x.wrapping_add(1);
         self.update_zero_and_negative_flags(self.register_x);
     }
 
     fn iny(&mut self) {
-        if self.register_y == u8::MAX {
-            self.register_y = 0;
-        } else {
-            self.register_y += 1;
-        }
+        self.register_y = self.register_y.wrapping_add(1);
         self.update_zero_and_negative_flags(self.register_y);
     }
 
@@ -131,31 +123,76 @@ impl CPU {
 
     pub fn run(&mut self) {
         loop {
-            let opscode = self.memory.read(self.program_counter);
+            let opscode_hex = self.memory.read(self.program_counter);
+            let opcode = CPU_OPCODES.get(&opscode_hex).unwrap_or_else(|| panic!("Failed to retrieve opcode!"));
+            println!("opcode: {opcode:?}");
             self.program_counter += 1;
 
-            match opscode {
-                0xA9 => {
-                    let param = self.memory.read(self.program_counter);
-                    self.program_counter += 1;
+            match opcode.name {
+                "ADC" => todo!(),
+                "AND" => todo!(),
+                "ASL" => todo!(),
+                "BCC" => todo!(),
+                "BCS" => todo!(),
+                "BEQ" => todo!(),
+                "BIT" => todo!(),
+                "BMI" => todo!(),
+                "BNE" => todo!(),
+                "BPL" => todo!(),
+                "BRK" => return,
+                "BVC" => todo!(),
+                "BVS" => todo!(),
+                "CLC" => todo!(),
+                "CLD" => todo!(),
+                "CLI" => todo!(),
+                "CLV" => todo!(),
+                "CMP" => todo!(),
+                "CPX" => todo!(),
+                "CPY" => todo!(),
+                "DEC" => todo!(),
+                "DEX" => todo!(),
+                "DEY" => todo!(),
+                "EOR" => todo!(),
+                "INC" => todo!(),
+                "INX" => self.inx(),
+                "INY" => self.iny(),
+                "JMP" => todo!(),
+                "JSR" => todo!(),
+                "LDA" => {
+                    let operand = self.get_operand_address(&opcode.addressing_mode);
+                    let param = self.memory.read(operand);
 
                     self.lda(param);
-                }
-
-                0xAA => self.tax(),
-
-                0xE8 => self.inx(),
-
-                0xC8 => self.iny(),
-
-                0x25 | 0x29 | 0x35 | 0x2D | 0x3D | 0x39 | 0x21 | 0x31 => {
-
-                }
-
-                0x00 => return,
-
-                _ => todo!(),
+                },
+                "LDX" => todo!(),
+                "LDY" => todo!(),
+                "LSR" => todo!(),
+                "NOP" => {},
+                "ORA" => todo!(),
+                "PHA" => todo!(),
+                "PHP" => todo!(),
+                "PLA" => todo!(),
+                "PLP" => todo!(),
+                "ROL" => todo!(),
+                "ROR" => todo!(),
+                "RTI" => todo!(),
+                "RTS" => todo!(),
+                "SBC" => todo!(),
+                "SEC" => todo!(),
+                "SED" => todo!(),
+                "SEI" => todo!(),
+                "STA" => todo!(),
+                "STX" => todo!(),
+                "STY" => todo!(),
+                "TAX" => self.tax(),
+                "TAY" => todo!(),
+                "TSX" => todo!(),
+                "TXA" => todo!(),
+                "TXS" => todo!(),
+                "TYA" => todo!(),
+                _ => panic!("Found unknown opcode: {}", opcode.name),
             }
+            self.program_counter += (opcode.bytes - 1) as u16;
         }
     }
 }
