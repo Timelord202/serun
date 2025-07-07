@@ -96,8 +96,7 @@ impl CPU {
                 let deref_base = (hi as u16) << 8 | (lo as u16);
                 deref_base.wrapping_add(self.register_y as u16)
             }
-
-            AddressingMode::NoneAddressing => {
+            _ => {
                 panic!("mode {mode:?} is not supported");
             }
         }
@@ -117,9 +116,9 @@ impl CPU {
         }
     }
 
-    fn get_address_value(&mut self, instruction: &Instruction) -> u8 {
-        let operand = self.get_operand_address(&instruction.addressing_mode);
-        self.memory.read(operand)
+    fn get_operand(&mut self, instruction: &Instruction) -> u8 {
+        let operand_address = self.get_operand_address(&instruction.addressing_mode);
+        self.memory.read(operand_address)
     }
 
     pub fn push_stack(&mut self, value: u8) {
@@ -160,10 +159,7 @@ impl CPU {
 
             match instruction.opcode {
                 Opcode::ADC => todo!(),
-                Opcode::AND => {
-                    let param = self.get_address_value(instruction);
-                    self.and(param);
-                },
+                Opcode::AND => self.and(instruction),
                 Opcode::ASL => todo!(),
                 Opcode::BCC => todo!(),
                 Opcode::BCS => todo!(),
@@ -179,67 +175,29 @@ impl CPU {
                 Opcode::CLD => {},
                 Opcode::CLI => self.cli(),
                 Opcode::CLV => self.clv(),
-                Opcode::CMP => {
-                    let param = self.get_address_value(instruction);
-                    self.cmp(param);
-                },
-                Opcode::CPX => {
-                    let param = self.get_address_value(instruction);
-                    self.cpx(param);
-                },
-                Opcode::CPY => {
-                    let param = self.get_address_value(instruction);
-                    self.cpy(param);
-                },
-                Opcode::DEC => {
-                    let address = self.get_operand_address(&instruction.addressing_mode);
-                    self.dec(address);
-                },
+                Opcode::CMP => self.cmp(instruction),
+                Opcode::CPX => self.cpx(instruction),
+                Opcode::CPY => self.cpy(instruction),
+                Opcode::DEC => self.dec(instruction),
                 Opcode::DEX => self.dex(),
                 Opcode::DEY => self.dey(),
-                Opcode::EOR => {
-                    let param = self.get_address_value(instruction);
-                    self.eor(param);
-                },
-                Opcode::INC => {
-                    let address = self.get_operand_address(&instruction.addressing_mode);
-                    self.inc(address);
-                },
+                Opcode::EOR => self.eor(instruction),
+                Opcode::INC => self.inc(instruction),
                 Opcode::INX => self.inx(),
                 Opcode::INY => self.iny(),
                 Opcode::JMP => todo!(),
                 Opcode::JSR => todo!(),
-                Opcode::LDA => {
-                    let param = self.get_address_value(instruction);
-                    self.lda(param);
-                },
-                Opcode::LDX => {
-                    let param = self.get_address_value(instruction);
-                    self.ldx(param);
-                },
-                Opcode::LDY => {
-                    let param = self.get_address_value(instruction);
-                    self.ldy(param);
-                },
+                Opcode::LDA => self.lda(instruction),
+                Opcode::LDX => self.ldx(instruction),
+                Opcode::LDY => self.ldy(instruction),
                 Opcode::LSR => todo!(),
                 Opcode::NOP => {},
-                Opcode::ORA => {
-                    let param = self.get_address_value(instruction);
-                    self.ora(param);
-                },
+                Opcode::ORA => self.ora(instruction),
                 Opcode::PHA => self.pha(),
                 Opcode::PHP => self.php(),
                 Opcode::PLA => self.pla(),
                 Opcode::PLP => self.plp(),
-                Opcode::ROL => {
-                    if let AddressingMode::NoneAddressing = instruction.addressing_mode {
-                        self.rol(true, 0x0000);
-                    }
-                    else {
-                        let address = self.get_operand_address(&instruction.addressing_mode);
-                        self.rol(false, address);
-                    }
-                },
+                Opcode::ROL => self.rol(instruction),
                 Opcode::ROR => todo!(),
                 Opcode::RTI => self.rti(),
                 Opcode::RTS => self.rts(),
@@ -247,18 +205,9 @@ impl CPU {
                 Opcode::SEC => self.sec(),
                 Opcode::SED => self.sed(),
                 Opcode::SEI => self.sei(),
-                Opcode::STA => {
-                    let address = self.get_operand_address(&instruction.addressing_mode);
-                    self.sta(address);
-                },
-                Opcode::STX => {
-                    let address = self.get_operand_address(&instruction.addressing_mode);
-                    self.stx(address);
-                },
-                Opcode::STY => {
-                    let address = self.get_operand_address(&instruction.addressing_mode);
-                    self.sty(address);
-                },
+                Opcode::STA => self.sta(instruction),
+                Opcode::STX => self.stx(instruction),
+                Opcode::STY => self.sty(instruction),
                 Opcode::TAX => self.tax(),
                 Opcode::TAY => self.tay(),
                 Opcode::TSX => self.tsx(),

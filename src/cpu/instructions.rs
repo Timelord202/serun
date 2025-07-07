@@ -1,9 +1,10 @@
 use crate::cpu::{CPU, StatusFlag};
+use crate::opcodes::Instruction;
 
 impl CPU {
 
-    pub fn and(&mut self, value: u8) {
-        self.register_a &= value;
+    pub fn and(&mut self, instruction: &Instruction) {
+        self.register_a &= self.get_operand(instruction);
         self.update_zero_and_negative_flags(self.register_a);
     }
 
@@ -43,19 +44,23 @@ impl CPU {
         }
     }
 
-    pub fn cmp(&mut self, value: u8) {
+    pub fn cmp(&mut self, instruction: &Instruction) {
+        let value = self.get_operand(instruction);
         self.compare_register(self.register_a, value);
     }
 
-    pub fn cpx(&mut self, value: u8) {
+    pub fn cpx(&mut self, instruction: &Instruction) {
+        let value = self.get_operand(instruction);
         self.compare_register(self.register_x, value);
     }
 
-    pub fn cpy(&mut self, value: u8) {
-        self.compare_register(self.register_x, value);
+    pub fn cpy(&mut self, instruction: &Instruction) {
+        let value = self.get_operand(instruction);
+        self.compare_register(self.register_y, value);
     }
 
-    pub fn dec(&mut self, address: u16) {
+    pub fn dec(&mut self, instruction: &Instruction) {
+        let address = self.get_operand_address(&instruction.addressing_mode);
         let mem_value = self.memory.read(address);
         let result = mem_value.wrapping_sub(1);
         self.memory.write(address, result);
@@ -72,12 +77,13 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_y);
     }
 
-    pub fn eor(&mut self, value: u8) {
-        self.register_a ^= value;
+    pub fn eor(&mut self, instruction: &Instruction) {
+        self.register_a ^= self.get_operand(instruction);
         self.update_zero_and_negative_flags(self.register_a);
     }
 
-    pub fn inc(&mut self, address: u16) {
+    pub fn inc(&mut self, instruction: &Instruction) {
+        let address = self.get_operand_address(&instruction.addressing_mode);
         let mem_value = self.memory.read(address);
         let result = mem_value.wrapping_add(1);
         self.memory.write(address, result);
@@ -94,23 +100,23 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_y);
     }
 
-    pub fn lda(&mut self, value: u8) {
-        self.register_a = value;
+    pub fn lda(&mut self, instruction: &Instruction) {
+        self.register_a = self.get_operand(instruction);
         self.update_zero_and_negative_flags(self.register_a);
     }
 
-    pub fn ldx(&mut self, value: u8) {
-        self.register_x = value;
+    pub fn ldx(&mut self, instruction: &Instruction) {
+        self.register_x = self.get_operand(instruction);
         self.update_zero_and_negative_flags(self.register_x);
     }
 
-    pub fn ldy(&mut self, value: u8) {
-        self.register_y = value;
+    pub fn ldy(&mut self, instruction: &Instruction) {
+        self.register_y = self.get_operand(instruction);
         self.update_zero_and_negative_flags(self.register_y);
     }
 
-    pub fn ora(&mut self, value: u8) {
-        self.register_a |= value;
+    pub fn ora(&mut self, instruction: &Instruction) {
+        self.register_a |= self.get_operand(instruction);
         self.update_zero_and_negative_flags(self.register_a);
     }
 
@@ -152,15 +158,18 @@ impl CPU {
         self.set_status_flag(StatusFlag::I);
     }
 
-    pub fn sta(&mut self, address: u16) {
+    pub fn sta(&mut self, instruction: &Instruction) {
+        let address = self.get_operand_address(&instruction.addressing_mode);
         self.memory.write(address, self.register_a);
     }
 
-    pub fn stx(&mut self, address: u16) {
+    pub fn stx(&mut self, instruction: &Instruction) {
+        let address = self.get_operand_address(&instruction.addressing_mode);
         self.memory.write(address, self.register_x);
     }
 
-    pub fn sty(&mut self, address: u16) {
+    pub fn sty(&mut self, instruction: &Instruction) {
+        let address = self.get_operand_address(&instruction.addressing_mode);
         self.memory.write(address, self.register_y);
     }
 
@@ -194,7 +203,7 @@ impl CPU {
     }
 
     // TODO: Finish implementing
-    pub fn rol(&mut self, use_accumulator: bool, address: u16) {
-        
+    pub fn rol(&mut self, instruction: &Instruction) {
+        let old_bit_seven = self.register_a &= 0b1000_0000;
     }
 }
