@@ -1,5 +1,5 @@
 use crate::memory::Memory;
-use crate::opcodes::{CPU_OPCODES, AddressingMode, Opcode};
+use crate::opcodes::{CPU_OPCODES, AddressingMode, Instruction, Opcode};
 
 pub mod instructions;
 
@@ -117,8 +117,8 @@ impl CPU {
         }
     }
 
-    fn get_address_value(&mut self, opcode: &Opcode) -> u8 {
-        let operand = self.get_operand_address(&opcode.addressing_mode);
+    fn get_address_value(&mut self, instruction: &Instruction) -> u8 {
+        let operand = self.get_operand_address(&instruction.addressing_mode);
         self.memory.read(operand)
     }
 
@@ -135,9 +135,9 @@ impl CPU {
     }
 
     pub fn pop_stack_u16(&mut self) -> u16 {
-        let lo = self.pop_stack();
-        let high = self.pop_stack();
-        (high << 8 | lo) as u16 
+        let lo = self.pop_stack() as u16;
+        let hi = self.pop_stack() as u16;
+        hi << 8 | lo
     }
 
     pub fn set_status_flag(&mut self, flag: StatusFlag) {
@@ -154,120 +154,119 @@ impl CPU {
 
     pub fn run(&mut self) {
         loop {
-            let opscode_hex = self.memory.read(self.program_counter);
-            let opcode = CPU_OPCODES.get(&opscode_hex).unwrap_or_else(|| panic!("Failed to retrieve opcode!"));
+            let instruction_hex = self.memory.read(self.program_counter);
+            let instruction = CPU_OPCODES.get(&instruction_hex).unwrap_or_else(|| panic!("Failed to retrieve opcode!"));
             self.program_counter += 1;
 
-            match opcode.name {
-                "ADC" => todo!(),
-                "AND" => {
-                    let param = self.get_address_value(&opcode);
+            match instruction.opcode {
+                Opcode::ADC => todo!(),
+                Opcode::AND => {
+                    let param = self.get_address_value(instruction);
                     self.and(param);
                 },
-                "ASL" => todo!(),
-                "BCC" => todo!(),
-                "BCS" => todo!(),
-                "BEQ" => todo!(),
-                "BIT" => todo!(),
-                "BMI" => todo!(),
-                "BNE" => todo!(),
-                "BPL" => todo!(),
-                "BRK" => return,
-                "BVC" => todo!(),
-                "BVS" => todo!(),
-                "CLC" => self.clc(),
-                "CLD" => {},
-                "CLI" => self.cli(),
-                "CLV" => self.clv(),
-                "CMP" => {
-                    let param = self.get_address_value(&opcode);
+                Opcode::ASL => todo!(),
+                Opcode::BCC => todo!(),
+                Opcode::BCS => todo!(),
+                Opcode::BEQ => todo!(),
+                Opcode::BIT => todo!(),
+                Opcode::BMI => todo!(),
+                Opcode::BNE => todo!(),
+                Opcode::BPL => todo!(),
+                Opcode::BRK => return,
+                Opcode::BVC => todo!(),
+                Opcode::BVS => todo!(),
+                Opcode::CLC => self.clc(),
+                Opcode::CLD => {},
+                Opcode::CLI => self.cli(),
+                Opcode::CLV => self.clv(),
+                Opcode::CMP => {
+                    let param = self.get_address_value(instruction);
                     self.cmp(param);
                 },
-                "CPX" => {
-                    let param = self.get_address_value(&opcode);
+                Opcode::CPX => {
+                    let param = self.get_address_value(instruction);
                     self.cpx(param);
                 },
-                "CPY" => {
-                    let param = self.get_address_value(&opcode);
+                Opcode::CPY => {
+                    let param = self.get_address_value(instruction);
                     self.cpy(param);
                 },
-                "DEC" => {
-                    let address = self.get_operand_address(&opcode.addressing_mode);
+                Opcode::DEC => {
+                    let address = self.get_operand_address(&instruction.addressing_mode);
                     self.dec(address);
                 },
-                "DEX" => self.dex(),
-                "DEY" => self.dey(),
-                "EOR" => {
-                    let param = self.get_address_value(&opcode);
+                Opcode::DEX => self.dex(),
+                Opcode::DEY => self.dey(),
+                Opcode::EOR => {
+                    let param = self.get_address_value(instruction);
                     self.eor(param);
                 },
-                "INC" => {
-                    let address = self.get_operand_address(&opcode.addressing_mode);
+                Opcode::INC => {
+                    let address = self.get_operand_address(&instruction.addressing_mode);
                     self.inc(address);
                 },
-                "INX" => self.inx(),
-                "INY" => self.iny(),
-                "JMP" => todo!(),
-                "JSR" => todo!(),
-                "LDA" => {
-                    let param = self.get_address_value(&opcode);
+                Opcode::INX => self.inx(),
+                Opcode::INY => self.iny(),
+                Opcode::JMP => todo!(),
+                Opcode::JSR => todo!(),
+                Opcode::LDA => {
+                    let param = self.get_address_value(instruction);
                     self.lda(param);
                 },
-                "LDX" => {
-                    let param = self.get_address_value(&opcode);
+                Opcode::LDX => {
+                    let param = self.get_address_value(instruction);
                     self.ldx(param);
                 },
-                "LDY" => {
-                    let param = self.get_address_value(&opcode);
+                Opcode::LDY => {
+                    let param = self.get_address_value(instruction);
                     self.ldy(param);
                 },
-                "LSR" => todo!(),
-                "NOP" => {},
-                "ORA" => {
-                    let param = self.get_address_value(&opcode);
+                Opcode::LSR => todo!(),
+                Opcode::NOP => {},
+                Opcode::ORA => {
+                    let param = self.get_address_value(instruction);
                     self.ora(param);
                 },
-                "PHA" => self.pha(),
-                "PHP" => self.php(),
-                "PLA" => self.pla(),
-                "PLP" => self.plp(),
-                "ROL" => {
-                    if let AddressingMode::NoneAddressing = opcode.addressing_mode {
+                Opcode::PHA => self.pha(),
+                Opcode::PHP => self.php(),
+                Opcode::PLA => self.pla(),
+                Opcode::PLP => self.plp(),
+                Opcode::ROL => {
+                    if let AddressingMode::NoneAddressing = instruction.addressing_mode {
                         self.rol(true, 0x0000);
                     }
                     else {
-                        let address = self.get_operand_address(&opcode.addressing_mode);
+                        let address = self.get_operand_address(&instruction.addressing_mode);
                         self.rol(false, address);
                     }
                 },
-                "ROR" => todo!(),
-                "RTI" => self.rti(),
-                "RTS" => self.rts(),
-                "SBC" => todo!(),
-                "SEC" => self.sec(),
-                "SED" => self.sed(),
-                "SEI" => self.sei(),
-                "STA" => {
-                    let address = self.get_operand_address(&opcode.addressing_mode);
+                Opcode::ROR => todo!(),
+                Opcode::RTI => self.rti(),
+                Opcode::RTS => self.rts(),
+                Opcode::SBC => todo!(),
+                Opcode::SEC => self.sec(),
+                Opcode::SED => self.sed(),
+                Opcode::SEI => self.sei(),
+                Opcode::STA => {
+                    let address = self.get_operand_address(&instruction.addressing_mode);
                     self.sta(address);
                 },
-                "STX" => {
-                    let address = self.get_operand_address(&opcode.addressing_mode);
+                Opcode::STX => {
+                    let address = self.get_operand_address(&instruction.addressing_mode);
                     self.stx(address);
                 },
-                "STY" => {
-                    let address = self.get_operand_address(&opcode.addressing_mode);
+                Opcode::STY => {
+                    let address = self.get_operand_address(&instruction.addressing_mode);
                     self.sty(address);
                 },
-                "TAX" => self.tax(),
-                "TAY" => self.tay(),
-                "TSX" => self.tsx(),
-                "TXA" => self.txa(),
-                "TXS" => self.txs(),
-                "TYA" => self.tya(),
-                _ => panic!("Found unknown opcode: {}", opcode.name),
+                Opcode::TAX => self.tax(),
+                Opcode::TAY => self.tay(),
+                Opcode::TSX => self.tsx(),
+                Opcode::TXA => self.txa(),
+                Opcode::TXS => self.txs(),
+                Opcode::TYA => self.tya(),
             }
-            self.program_counter += (opcode.bytes - 1) as u16;
+            self.program_counter += (instruction.bytes - 1) as u16;
         }
     }
 }
