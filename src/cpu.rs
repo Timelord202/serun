@@ -151,6 +151,18 @@ impl CPU {
         };
     }
 
+    pub fn clear_status_flag(&mut self, flag: StatusFlag) {
+        match flag {
+            StatusFlag::C => self.status &= 0b1111_1110,
+            StatusFlag::Z => self.status &= 0b1111_1101,
+            StatusFlag::I => self.status &= 0b1111_1011,
+            StatusFlag::D => self.status &= 0b1111_0111,
+            StatusFlag::B => self.status &= 0b1110_1111,
+            StatusFlag::V => self.status &= 0b1011_1111,
+            StatusFlag::N => self.status &= 0b0111_1111,
+        };
+    }
+
     pub fn run(&mut self) {
         loop {
             let instruction_hex = self.memory.read(self.program_counter);
@@ -160,7 +172,7 @@ impl CPU {
             match instruction.opcode {
                 Opcode::ADC => todo!(),
                 Opcode::AND => self.and(instruction),
-                Opcode::ASL => todo!(),
+                Opcode::ASL => self.asl(instruction),
                 Opcode::BCC => todo!(),
                 Opcode::BCS => todo!(),
                 Opcode::BEQ => todo!(),
@@ -198,7 +210,7 @@ impl CPU {
                 Opcode::PLA => self.pla(),
                 Opcode::PLP => self.plp(),
                 Opcode::ROL => self.rol(instruction),
-                Opcode::ROR => todo!(),
+                Opcode::ROR => self.ror(instruction),
                 Opcode::RTI => self.rti(),
                 Opcode::RTS => self.rts(),
                 Opcode::SBC => todo!(),

@@ -274,7 +274,7 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0x28u8 => Instruction { opcode: Opcode::PLP, bytes: 1, cycles: 4, addressing_mode: AddressingMode::NoneAddressing },
 
         // ROL
-        0x2Au8 => Instruction { opcode: Opcode::ROL, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },
+        0x2Au8 => Instruction { opcode: Opcode::ROL, bytes: 1, cycles: 2, addressing_mode: AddressingMode::Accumulator },
         0x26u8 => Instruction { opcode: Opcode::ROL, bytes: 2, cycles: 5, addressing_mode: AddressingMode::ZeroPage },
         0x36u8 => Instruction { opcode: Opcode::ROL, bytes: 2, cycles: 6, addressing_mode: AddressingMode::ZeroPage_X },
         0x2Eu8 => Instruction { opcode: Opcode::ROL, bytes: 3, cycles: 6, addressing_mode: AddressingMode::Absolute },

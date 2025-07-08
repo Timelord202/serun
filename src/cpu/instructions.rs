@@ -1,5 +1,7 @@
+use std::ops::Add;
+
 use crate::cpu::{CPU, StatusFlag};
-use crate::opcodes::Instruction;
+use crate::opcodes::{AddressingMode, Instruction};
 
 impl CPU {
 
@@ -8,16 +10,41 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_a);
     }
 
+    pub fn asl(&mut self, instruction: &Instruction) {
+        match &instruction.addressing_mode {
+            AddressingMode::Accumulator => {
+                let old_bit_seven = (self.register_a & 0b1000_0000) >> 7;
+                self.register_a <<= 1;
+                self.clear_status_flag(StatusFlag::C);
+                self.status |= old_bit_seven;
+                self.update_zero_and_negative_flags(self.register_a);
+            },
+            AddressingMode::ZeroPage | AddressingMode::ZeroPage_X | AddressingMode::Absolute | AddressingMode::Absolute_X => {
+                let operand_address = self.get_operand_address(&instruction.addressing_mode);
+                let mut operand = self.get_operand(instruction);
+                let old_bit_seven = (operand & 0b1000_0000) >> 7;
+                operand <<= 1;
+                self.clear_status_flag(StatusFlag::C);
+                self.status |= old_bit_seven;
+                self.memory.write(operand_address, operand);
+                self.update_zero_and_negative_flags(operand);
+            },
+            _ => {
+
+            }
+        }
+    }
+
     pub fn clc(&mut self) {
-        self.status &= 0b1111_1110;
+        self.clear_status_flag(StatusFlag::C);
     }
 
     pub fn cli(&mut self) {
-        self.status &= 0b1101_1111;
+        self.clear_status_flag(StatusFlag::I);
     }
 
     pub fn clv(&mut self) {
-        self.status &= 0b1111_1101;
+        self.clear_status_flag(StatusFlag::V);
     }
 
     // Compare contents of a register to a given value.
@@ -27,20 +54,20 @@ impl CPU {
             self.set_status_flag(StatusFlag::C);
         }
         else {
-            self.status &= 0b1111_1110;
+            self.clear_status_flag(StatusFlag::C);
         }
         if register == value {
             self.set_status_flag(StatusFlag::Z);
         }
         else {
-            self.status &= 0b1111_1101;
+            self.clear_status_flag(StatusFlag::Z);
         }
 
         let result = register.wrapping_sub(value);
         if result & 0b1000_0000 != 0 {
             self.set_status_flag(StatusFlag::N);
         } else {
-            self.status &= 0b0111_1111;
+            self.clear_status_flag(StatusFlag::N);
         }
     }
 
@@ -202,8 +229,59 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_a);
     }
 
-    // TODO: Finish implementing
+    fn rotate_left(&mut self, mut operand: u8) -> u8 {
+        let old_bit_seven = (operand & 0b1000_0000) >> 7;
+        operand <<= 1;
+        operand |= self.status & 1;
+        self.clear_status_flag(StatusFlag::C);
+        self.status |= old_bit_seven;
+        operand
+    }
+
     pub fn rol(&mut self, instruction: &Instruction) {
-        let old_bit_seven = self.register_a &= 0b1000_0000;
+        match &instruction.addressing_mode {
+            AddressingMode::Accumulator => {
+                self.register_a = self.rotate_left(self.register_a);
+                self.update_zero_and_negative_flags(self.register_a);
+            },
+            AddressingMode::ZeroPage | AddressingMode::ZeroPage_X | AddressingMode::Absolute | AddressingMode::Absolute_X => {
+                let operand_address = self.get_operand_address(&instruction.addressing_mode);
+                let operand = self.get_operand(instruction);
+                let rotated_operand = self.rotate_left(operand);
+                self.memory.write(operand_address, rotated_operand);
+                self.update_zero_and_negative_flags(rotated_operand);
+            },
+            _ => {
+                panic!("Recieved unexpected address mode while performing rol instruction");
+            }
+        }
+    }
+
+    fn rotate_right(&mut self, mut operand: u8) -> u8 {
+        let old_bit_zero = operand & 0b0000_0001;
+        operand >>= 1;
+        operand |= (self.status & 1) << 7;
+        self.clear_status_flag(StatusFlag::C);
+        self.status |= old_bit_zero;
+        operand
+    }
+
+    pub fn ror(&mut self, instruction: &Instruction) {
+        match &instruction.addressing_mode {
+            AddressingMode::Accumulator => {
+                self.register_a = self.rotate_right(self.register_a);
+                self.update_zero_and_negative_flags(self.register_a);
+            },
+            AddressingMode::ZeroPage | AddressingMode::ZeroPage_X | AddressingMode::Absolute | AddressingMode::Absolute_X => {
+                let operand_address = self.get_operand_address(&instruction.addressing_mode);
+                let operand = self.get_operand(instruction);
+                let rotated_operand = self.rotate_right(operand);
+                self.memory.write(operand_address, rotated_operand);
+                self.update_zero_and_negative_flags(rotated_operand);
+            },
+            _ => {
+                panic!("Recieved unexpected address mode while performing rol instruction");
+            }
+        }
     }
 }

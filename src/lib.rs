@@ -4,6 +4,7 @@ pub mod opcodes;
 
 #[cfg(test)]
 mod test {
+    use crate::opcodes::{Instruction, Opcode, AddressingMode};
     use super::cpu::CPU;
 
     #[test]
@@ -63,5 +64,17 @@ mod test {
         assert_eq!(val2, 0x02);
         assert_eq!(val3, 0x01);
         assert_eq!(cpu.stack_pointer, 0xFD);
+    }
+
+    #[test]
+    fn test_rol() {
+        let mut cpu = CPU::new();
+        let instruction = Instruction { opcode: Opcode::ROL, bytes: 1, cycles: 2, addressing_mode: AddressingMode::Accumulator };
+        cpu.reset();
+        cpu.status = 0b1010_0111;
+        cpu.register_a = 0b0011_1100;
+        cpu.rol(&instruction);
+        assert_eq!(cpu.register_a, 0b0111_1001);
+        assert_eq!(cpu.status, 0b0010_0100);
     }
 }
