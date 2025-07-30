@@ -283,20 +283,24 @@ impl CPU {
         }
     }
 
-    // TODO possibly turn into one method
-    pub fn bcc(&mut self) {
-        let carry_flag = self.status & 0b0000_0001;
-        if carry_flag == 0 {
+    // Helper function for branch instructions
+    fn branch(&mut self, flag: StatusFlag, require_flag_is_set: bool) {
+        let flag = self.get_status_flag(flag);
+        if (require_flag_is_set && flag == 1) || (!require_flag_is_set && flag == 0) {
             let displacement = self.memory.read(self.program_counter);
             self.program_counter += displacement as u16;
         }
     }
 
+    pub fn bcc(&mut self) {
+        self.branch(StatusFlag::C, false);
+    }
+
     pub fn bcs(&mut self) {
-        let carry_flag = self.status & 0b0000_0001;
-        if carry_flag == 1 {
-            let displacement = self.memory.read(self.program_counter);
-            self.program_counter += displacement as u16;
-        }
+        self.branch(StatusFlag::C, true);
+    }
+
+    pub fn beq(&mut self) {
+        self.branch(StatusFlag::Z, true);
     }
 }

@@ -139,6 +139,18 @@ impl CPU {
         hi << 8 | lo
     }
 
+    pub fn get_status_flag(&mut self, flag: StatusFlag) -> u8 {
+        match flag {
+            StatusFlag::C => self.status & 0b0000_0001,
+            StatusFlag::Z => (self.status & 0b0000_0010) >> 1,
+            StatusFlag::I => (self.status & 0b0000_0100) >> 2,
+            StatusFlag::D => (self.status & 0b0000_1000) >> 3,
+            StatusFlag::B => (self.status & 0b0001_0000) >> 4,
+            StatusFlag::V => (self.status & 0b0100_0000) >> 6,
+            StatusFlag::N => (self.status & 0b1000_0000) >> 7,
+        }
+    }
+
     pub fn set_status_flag(&mut self, flag: StatusFlag) {
         match flag {
             StatusFlag::C => self.status |= 0b0000_0001,
@@ -175,7 +187,7 @@ impl CPU {
                 Opcode::ASL => self.asl(instruction),
                 Opcode::BCC => self.bcc(),
                 Opcode::BCS => self.bcs(),
-                Opcode::BEQ => todo!(),
+                Opcode::BEQ => self.beq(),
                 Opcode::BIT => todo!(),
                 Opcode::BMI => todo!(),
                 Opcode::BNE => todo!(),
