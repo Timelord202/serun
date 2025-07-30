@@ -1,5 +1,3 @@
-use std::ops::Add;
-
 use crate::cpu::{CPU, StatusFlag};
 use crate::opcodes::{AddressingMode, Instruction};
 
@@ -282,6 +280,23 @@ impl CPU {
             _ => {
                 panic!("Recieved unexpected address mode while performing rol instruction");
             }
+        }
+    }
+
+    // TODO possibly turn into one method
+    pub fn bcc(&mut self) {
+        let carry_flag = self.status & 0b0000_0001;
+        if carry_flag == 0 {
+            let displacement = self.memory.read(self.program_counter);
+            self.program_counter += displacement as u16;
+        }
+    }
+
+    pub fn bcs(&mut self) {
+        let carry_flag = self.status & 0b0000_0001;
+        if carry_flag == 1 {
+            let displacement = self.memory.read(self.program_counter);
+            self.program_counter += displacement as u16;
         }
     }
 }
