@@ -66,6 +66,7 @@ impl CPU {
                 let pos = self.memory.read(self.program_counter);
                 pos.wrapping_add(self.register_x) as u16
             }
+
             AddressingMode::ZeroPage_Y => {
                 let pos = self.memory.read(self.program_counter);
                 pos.wrapping_add(self.register_y) as u16
@@ -75,27 +76,33 @@ impl CPU {
                 let base = self.memory.read_u16(self.program_counter);
                 base.wrapping_add(self.register_x as u16)
             }
+
             AddressingMode::Absolute_Y => {
                 let base = self.memory.read_u16(self.program_counter);
                 base.wrapping_add(self.register_y as u16)
             }
 
+            AddressingMode::Indirect => {
+                let operand_address = self.memory.read_u16(self.program_counter);
+                self.memory.read_u16(operand_address)
+            }
+
             AddressingMode::Indirect_X => {
                 let base = self.memory.read(self.program_counter);
-
-                let ptr: u8 = base.wrapping_add(self.register_x);
+                let ptr = base.wrapping_add(self.register_x);
                 let lo = self.memory.read(ptr as u16);
                 let hi = self.memory.read(ptr.wrapping_add(1) as u16);
                 (hi as u16) << 8 | (lo as u16)
             }
+
             AddressingMode::Indirect_Y => {
                 let base = self.memory.read(self.program_counter);
-
                 let lo = self.memory.read(base as u16);
                 let hi = self.memory.read(base.wrapping_add(1) as u16);
                 let deref_base = (hi as u16) << 8 | (lo as u16);
                 deref_base.wrapping_add(self.register_y as u16)
             }
+
             _ => {
                 panic!("mode {mode:?} is not supported");
             }
@@ -193,8 +200,8 @@ impl CPU {
                 Opcode::BNE => self.bne(),
                 Opcode::BPL => self.bpl(),
                 Opcode::BRK => return,
-                Opcode::BVC => todo!(),
-                Opcode::BVS => todo!(),
+                Opcode::BVC => self.bvc(),
+                Opcode::BVS => self.bvs(),
                 Opcode::CLC => self.clc(),
                 Opcode::CLD => {},
                 Opcode::CLI => self.cli(),

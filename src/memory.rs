@@ -20,7 +20,7 @@ impl Memory {
 
     pub fn read_u16(&mut self, pos: u16) -> u16 {
         let lo = self.read(pos) as u16;
-        let hi = self.read(pos + 1) as u16;
+        let hi = self.read(pos.wrapping_add(1)) as u16;
         (hi << 8) | lo
     }
 

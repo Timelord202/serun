@@ -346,4 +346,17 @@ impl CPU {
     pub fn bpl(&mut self) {
         self.branch(StatusFlag::N, false);
     }
+
+    pub fn bvc(&mut self) {
+        self.branch(StatusFlag::V, false);
+    }
+
+    pub fn bvs(&mut self) {
+        self.branch(StatusFlag::V, true);
+    }
+
+    // TODO: Need to account for 6502 bug
+    pub fn jmp(&mut self, instruction: &Instruction) {
+        self.program_counter = self.get_operand_address(&instruction.addressing_mode);
+    }
 }

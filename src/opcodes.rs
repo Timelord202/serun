@@ -10,6 +10,7 @@ pub enum AddressingMode {
     Absolute,
     Absolute_X,
     Absolute_Y,
+    Indirect,
     Indirect_X,
     Indirect_Y,
     Accumulator,
@@ -212,7 +213,7 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
 
         // JMP
         0x4Cu8 => Instruction { opcode: Opcode::JMP, bytes: 3, cycles: 3, addressing_mode: AddressingMode::Absolute },
-        0x6Cu8 => Instruction { opcode: Opcode::JMP, bytes: 3, cycles: 5, addressing_mode: AddressingMode::NoneAddressing },
+        0x6Cu8 => Instruction { opcode: Opcode::JMP, bytes: 3, cycles: 5, addressing_mode: AddressingMode::Indirect },
 
         // JSR
         0x20u8 => Instruction { opcode: Opcode::JSR, bytes: 3, cycles: 6, addressing_mode: AddressingMode::Absolute },
