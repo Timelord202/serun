@@ -303,4 +303,47 @@ impl CPU {
     pub fn beq(&mut self) {
         self.branch(StatusFlag::Z, true);
     }
+
+    pub fn bit(&mut self, instruction: &Instruction) {
+        let operand = self.get_operand(instruction);
+        let bit_seven = (operand & 0b1000_0000) >> 7;
+        let bit_six = (operand & 0b0100_0000) >> 6;
+        let result = self.register_a & operand;
+
+        // Set negative flag
+        if bit_seven == 1 {
+            self.set_status_flag(StatusFlag::N);
+        }
+        else {
+            self.clear_status_flag(StatusFlag::N);
+        }
+
+        // Set overflow flag
+        if bit_six == 1 {
+            self.set_status_flag(StatusFlag::V);
+        }
+        else {
+            self.clear_status_flag(StatusFlag::V);
+        }
+
+        // Set zero flag
+        if result == 0 {
+            self.set_status_flag(StatusFlag::Z);
+        }
+        else {
+            self.clear_status_flag(StatusFlag::Z);
+        }
+    }
+
+    pub fn bmi(&mut self) {
+        self.branch(StatusFlag::N, true);
+    }
+
+    pub fn bne(&mut self) {
+        self.branch(StatusFlag::Z, false);
+    }
+
+    pub fn bpl(&mut self) {
+        self.branch(StatusFlag::N, false);
+    }
 }
