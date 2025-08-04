@@ -359,4 +359,10 @@ impl CPU {
     pub fn jmp(&mut self, instruction: &Instruction) {
         self.program_counter = self.get_operand_address(&instruction.addressing_mode);
     }
+
+    pub fn jsr(&mut self, instruction: &Instruction) {
+        let operand_address = self.get_operand_address(&instruction.addressing_mode);
+        self.program_counter = operand_address.wrapping_sub(1);
+        self.push_stack_u16(operand_address);
+    }
 }

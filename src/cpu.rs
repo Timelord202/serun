@@ -129,9 +129,16 @@ impl CPU {
     }
 
     pub fn push_stack(&mut self, value: u8) {
-        let stack_write_addr = STACK_START_ADDR - (SP_INITIAL_ADDR- self.stack_pointer) as u16;
+        let stack_write_addr = STACK_START_ADDR - (SP_INITIAL_ADDR - self.stack_pointer) as u16;
         self.memory.write(stack_write_addr, value);
         self.stack_pointer = self.stack_pointer.wrapping_sub(1);
+    }
+
+    pub fn push_stack_u16(&mut self, value: u16) {
+        let hi = (value >> 8) as u8;
+        let lo = (value & 0xff) as u8;
+        self.push_stack(lo);
+        self.push_stack(hi);
     }
 
     pub fn pop_stack(&mut self) -> u8 {
@@ -216,8 +223,8 @@ impl CPU {
                 Opcode::INC => self.inc(instruction),
                 Opcode::INX => self.inx(),
                 Opcode::INY => self.iny(),
-                Opcode::JMP => todo!(),
-                Opcode::JSR => todo!(),
+                Opcode::JMP => self.jmp(instruction),
+                Opcode::JSR => self.jsr(instruction),
                 Opcode::LDA => self.lda(instruction),
                 Opcode::LDX => self.ldx(instruction),
                 Opcode::LDY => self.ldy(instruction),
