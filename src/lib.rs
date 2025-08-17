@@ -9,7 +9,7 @@ mod test {
 
     #[test]
     fn test_0xa9_lda_immediate_load_data() {
-        let mut cpu = CPU::new();
+        let mut cpu: CPU = Default::default();
         cpu.load_and_run(vec![0xa9, 0x05, 0x00]);
         assert_eq!(cpu.register_a, 0x05);
         assert!(cpu.status & 0b0000_0010 == 0b00);
@@ -18,14 +18,14 @@ mod test {
 
     #[test]
     fn test_0xa9_lda_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu: CPU = Default::default();
         cpu.load_and_run(vec![0xa9, 0x00, 0x00]);
         assert!(cpu.status & 0b0000_0010 == 0b10);
     }
 
     #[test]
     fn test_0xaa_tax_move_a_to_x() {
-        let mut cpu = CPU::new();
+        let mut cpu: CPU = Default::default();
         cpu.register_a =0;
         cpu.load_and_run(vec![0xaa, 0x00]);
 
@@ -34,7 +34,7 @@ mod test {
 
     #[test]
     fn test_5_ops_working_together() {
-        let mut cpu = CPU::new();
+        let mut cpu: CPU = Default::default();
         cpu.load_and_run(vec![0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
 
         assert_eq!(cpu.register_x, 0xc1)
@@ -42,7 +42,7 @@ mod test {
 
     #[test]
     fn test_inx_overflow() {
-        let mut cpu = CPU::new();
+        let mut cpu: CPU = Default::default();
         cpu.register_x = 0xff;
         cpu.load_and_run(vec![0xe8, 0xe8, 0x00]);
 
@@ -51,7 +51,7 @@ mod test {
 
     #[test]
     fn test_push_and_pop_stack() {
-        let mut cpu = CPU::new();
+        let mut cpu: CPU = Default::default();
         cpu.reset();
         cpu.push_stack(0x01);
         cpu.push_stack(0x02);
@@ -68,7 +68,7 @@ mod test {
 
     #[test]
     fn test_rol() {
-        let mut cpu = CPU::new();
+        let mut cpu: CPU = Default::default();
         let instruction = Instruction { opcode: Opcode::ROL, bytes: 1, cycles: 2, addressing_mode: AddressingMode::Accumulator };
         cpu.reset();
         cpu.status = 0b1010_0111;

@@ -2,13 +2,15 @@ pub struct Memory {
     memory: [u8; 0xFFFF],
 }
 
-impl Memory {
-
-    pub fn new() -> Self {
+impl Default for Memory {
+    fn default() -> Self {
         Memory {
             memory: [0; 0xFFFF]
         }
     }
+}
+
+impl Memory {
 
     pub fn read(&self, addr: u16) -> u8 {
         self.memory[addr as usize]
