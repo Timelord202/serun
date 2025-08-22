@@ -2,6 +2,36 @@ use crate::cpu::{CPU, StatusFlag};
 use crate::opcodes::{AddressingMode, Instruction};
 
 impl CPU {
+    fn modify_accumulator(&mut self, new_accumulator_value: u16, operand: u8) {
+        if new_accumulator_value > 0xFF {
+            self.set_status_flag(StatusFlag::C);
+        }
+        else {
+            self.clear_status_flag(StatusFlag::C);
+        }
+        if (self.register_a ^ new_accumulator_value as u8) & (operand ^ new_accumulator_value as u8) & 0x80 != 0 {
+            self.set_status_flag(StatusFlag::V);
+        }
+        else {
+            self.clear_status_flag(StatusFlag::V);
+        }
+
+        self.register_a = new_accumulator_value as u8;
+        self.update_zero_and_negative_flags(self.register_a);
+    }
+
+    // TODO: Create wrapping add for new accumulator values
+    pub fn adc (&mut self, instruction: &Instruction) {
+        let operand = self.get_operand(instruction);
+        let new_accumulator_value = self.register_a as u16 + operand as u16 + self.get_status_flag(StatusFlag::C) as u16;
+        self.modify_accumulator(new_accumulator_value, operand);
+    }
+
+    pub fn sbc (&mut self, instruction: &Instruction) {
+        let operand = self.get_operand(instruction);
+        let new_accumulator_value = self.register_a as u16 - operand as u16 - (1 - self.get_status_flag(StatusFlag::C) as u16);
+        self.modify_accumulator(new_accumulator_value, operand);
+    }
 
     pub fn and(&mut self, instruction: &Instruction) {
         self.register_a &= self.get_operand(instruction);
@@ -27,9 +57,7 @@ impl CPU {
                 self.memory.write(operand_address, operand);
                 self.update_zero_and_negative_flags(operand);
             },
-            _ => {
-
-            }
+            _ => {}
         }
     }
 
@@ -288,7 +316,7 @@ impl CPU {
         let flag = self.get_status_flag(flag);
         if (require_flag_is_set && flag == 1) || (!require_flag_is_set && flag == 0) {
             let displacement = self.memory.read(self.program_counter);
-            self.program_counter += displacement as u16;
+            self.program_counter += self.program_counter.wrapping_add(displacement as u16);
         }
     }
 
@@ -364,5 +392,29 @@ impl CPU {
         let operand_address = self.get_operand_address(&instruction.addressing_mode);
         self.program_counter = operand_address.wrapping_sub(1);
         self.push_stack_u16(operand_address);
+    }
+
+    // TODO: This and asl should be more generalized
+    pub fn lsr(&mut self, instruction: &Instruction) {
+        match &instruction.addressing_mode {
+            AddressingMode::Accumulator => {
+                let old_bit_zero = self.register_a & 1;
+                self.register_a >>= 1;
+                self.clear_status_flag(StatusFlag::C);
+                self.status |= old_bit_zero;
+                self.update_zero_and_negative_flags(self.register_a);
+            },
+            AddressingMode::ZeroPage | AddressingMode::ZeroPage_X | AddressingMode::Absolute | AddressingMode::Absolute_X => {
+                let operand_address = self.get_operand_address(&instruction.addressing_mode);
+                let mut operand = self.get_operand(instruction);
+                let old_bit_zero = operand & 1;
+                operand >>= 1;
+                self.clear_status_flag(StatusFlag::C);
+                self.status |= old_bit_zero;
+                self.memory.write(operand_address, operand);
+                self.update_zero_and_negative_flags(operand);
+            },
+            _ => {}
+        }
     }
 }

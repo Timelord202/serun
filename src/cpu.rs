@@ -28,7 +28,6 @@ pub struct CPU {
 }
 
 impl CPU {
-
     pub fn reset(&mut self) {
         self.register_a = 0;
         self.register_x = 0;
@@ -94,7 +93,7 @@ impl CPU {
             }
 
             _ => {
-                panic!("mode {mode:?} is not supported");
+                panic!("addressing mode {mode:?} is not supported");
             }
         }
     }
@@ -186,7 +185,7 @@ impl CPU {
             self.program_counter += 1;
 
             match instruction.opcode {
-                Opcode::ADC => todo!(),
+                Opcode::ADC => self.adc(instruction),
                 Opcode::AND => self.and(instruction),
                 Opcode::ASL => self.asl(instruction),
                 Opcode::BCC => self.bcc(),
@@ -218,7 +217,7 @@ impl CPU {
                 Opcode::LDA => self.lda(instruction),
                 Opcode::LDX => self.ldx(instruction),
                 Opcode::LDY => self.ldy(instruction),
-                Opcode::LSR => todo!(),
+                Opcode::LSR => self.lsr(instruction),
                 Opcode::NOP => {},
                 Opcode::ORA => self.ora(instruction),
                 Opcode::PHA => self.pha(),
@@ -229,7 +228,7 @@ impl CPU {
                 Opcode::ROR => self.ror(instruction),
                 Opcode::RTI => self.rti(),
                 Opcode::RTS => self.rts(),
-                Opcode::SBC => todo!(),
+                Opcode::SBC => self.sbc(instruction),
                 Opcode::SEC => self.sec(),
                 Opcode::SED => self.sed(),
                 Opcode::SEI => self.sei(),
