@@ -43,7 +43,7 @@ mod test {
     #[test]
     fn test_inx_overflow() {
         let mut cpu: CPU = Default::default();
-        cpu.register_x = 0xff;
+        cpu.register_x = 0xFF;
         cpu.load_and_run(vec![0xe8, 0xe8, 0x00]);
 
         assert_eq!(cpu.register_x, 2)

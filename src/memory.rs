@@ -27,7 +27,7 @@ impl Memory {
 
     pub fn write_u16(&mut self, pos: u16, data: u16) {
         let hi = (data >> 8) as u8;
-        let lo = (data & 0xff) as u8;
+        let lo = (data & 0xFF) as u8;
         self.write(pos, lo);
         self.write(pos + 1, hi);
     }

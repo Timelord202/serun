@@ -3,8 +3,8 @@ use crate::opcodes::{CPU_OPCODES, AddressingMode, Instruction, Opcode};
 
 pub mod instructions;
 
+const SP_BASE_ADDR: u16 = 0x0100;
 const SP_INITIAL_ADDR: u8 = 0xFD;
-const STACK_START_ADDR: u16 = 0x01FF;
 
 pub enum StatusFlag {
     C,
@@ -24,7 +24,7 @@ pub struct CPU {
     pub stack_pointer: u8,
     pub program_counter: u16,
     pub status: u8,
-    memory: Memory,
+    pub memory: Memory,
 }
 
 impl CPU {
@@ -33,7 +33,6 @@ impl CPU {
         self.register_x = 0;
         self.status = 0;
         self.stack_pointer = SP_INITIAL_ADDR;
-
         self.program_counter = self.memory.read_u16(0xFFFC);
     }
 
@@ -118,22 +117,20 @@ impl CPU {
     }
 
     pub fn push_stack(&mut self, value: u8) {
-        let stack_write_addr = STACK_START_ADDR - (SP_INITIAL_ADDR - self.stack_pointer) as u16;
-        self.memory.write(stack_write_addr, value);
+        self.memory.write(SP_BASE_ADDR + u16::from(self.stack_pointer), value);
         self.stack_pointer = self.stack_pointer.wrapping_sub(1);
     }
 
     pub fn push_stack_u16(&mut self, value: u16) {
         let hi = (value >> 8) as u8;
-        let lo = (value & 0xff) as u8;
-        self.push_stack(lo);
+        let lo = (value & 0xFF) as u8;
         self.push_stack(hi);
+        self.push_stack(lo);
     }
 
     pub fn pop_stack(&mut self) -> u8 {
         self.stack_pointer = self.stack_pointer.wrapping_add(1);
-        let stack_read_addr = STACK_START_ADDR - (SP_INITIAL_ADDR- self.stack_pointer) as u16;
-        self.memory.read(stack_read_addr)
+        self.memory.read(SP_BASE_ADDR + u16::from(self.stack_pointer))
     }
 
     pub fn pop_stack_u16(&mut self) -> u16 {

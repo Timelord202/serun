@@ -196,7 +196,8 @@ impl CPU {
     }
 
     pub fn rts(&mut self) {
-        self.program_counter = self.pop_stack_u16() - 1;
+        let stack_val = self.pop_stack_u16();
+        self.program_counter = stack_val.wrapping_add(1);
     }
 
     pub fn sec(&mut self) {
