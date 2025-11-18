@@ -101,13 +101,13 @@ impl CPU {
         if result == 0 {
             self.set_status_flag(StatusFlag::Z);
         } else {
-            self.status &= 0b1111_1101;
+            self.clear_status_flag(StatusFlag::Z);
         }
 
         if result & 0b1000_0000 != 0 {
             self.set_status_flag(StatusFlag::N);
         } else {
-            self.status &= 0b0111_1111;
+            self.clear_status_flag(StatusFlag::N);
         }
     }
 
