@@ -1,13 +1,13 @@
 use std::{fmt, fs};
 
 const NES_HEADER_PREFIX: [u8; 4] = [0x4E, 0x45, 0x53, 0x1A];
+const PRG_ROM_UNIT_SIZE: usize = 16384;
+const CHR_ROM_UNIT_SIZE: usize = 8192;
 
 #[derive(Debug)]
 pub struct Cartidge {
-    prg_size: u8,
-    chr_size: u8,
-    prg: Vec<u8>,
-    chr: Vec<u8>
+    prg_rom: Vec<u8>,
+    chr_rom: Vec<u8>
 }
 
 #[derive(Debug)]
@@ -26,12 +26,10 @@ impl fmt::Display for CartidgeError {
 }
 
 impl Cartidge {
-    fn new(prg_size: u8, chr_size: u8, prg: Vec<u8>, chr: Vec<u8>) -> Self {
+    fn new(prg_rom: Vec<u8>, chr_rom: Vec<u8>) -> Self {
         Cartidge {
-            prg_size,
-            chr_size,
-            prg,
-            chr
+            prg_rom,
+            chr_rom
         }
     }
 
@@ -47,7 +45,15 @@ impl Cartidge {
         if data[..4] != NES_HEADER_PREFIX {
             return Err(CartidgeError::MissingHeaderPrefix);
         }
-        println!("{:x?}", &data[0..4]);
-        Ok(Self::new(1, 1, vec![1], vec![1]))
+        let prg_rom_size = (data[4] as usize) * PRG_ROM_UNIT_SIZE;
+        let chr_rom_size = (data[5] as usize) * CHR_ROM_UNIT_SIZE;
+        let skip_trainer = data[6] & 0b100 == 0;
+        let prg_start = if skip_trainer { 0x10 } else { 0x10 + 0x200 };
+        let prg_end = prg_start + prg_rom_size;
+
+        Ok(Self::new(
+            data[prg_start..prg_end].to_vec(), 
+            data[prg_end..(prg_end + chr_rom_size)].to_vec()
+        ))
     }
 }
