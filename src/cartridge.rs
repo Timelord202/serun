@@ -6,8 +6,8 @@ const CHR_ROM_UNIT_SIZE: usize = 8192;
 
 #[derive(Debug)]
 pub struct Cartidge {
-    prg_rom: Vec<u8>,
-    chr_rom: Vec<u8>
+    pub prg_rom: Vec<u8>,
+    pub chr_rom: Vec<u8>
 }
 
 #[derive(Debug)]
@@ -49,10 +49,10 @@ impl Cartidge {
         let chr_rom_size = (data[5] as usize) * CHR_ROM_UNIT_SIZE;
         let skip_trainer = data[6] & 0b100 == 0;
         let prg_start = if skip_trainer { 0x10 } else { 0x10 + 0x200 };
-        let prg_end = prg_start + prg_rom_size;
+        let prg_end = prg_start + prg_rom_size - 1;
 
         Ok(Self::new(
-            data[prg_start..prg_end].to_vec(), 
+            data[prg_start..prg_end].to_vec(),
             data[prg_end..(prg_end + chr_rom_size)].to_vec()
         ))
     }
