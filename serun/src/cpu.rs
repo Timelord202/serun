@@ -1,5 +1,6 @@
 use crate::memory::Memory;
 use crate::opcodes::{CPU_OPCODES, AddressingMode, Instruction, Opcode};
+use serde::Serialize;
 
 pub mod instructions;
 
@@ -16,7 +17,7 @@ pub enum StatusFlag {
     N
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Serialize)]
 pub struct CPU {
     pub register_a: u8,
     pub register_x: u8,
@@ -36,10 +37,9 @@ impl CPU {
         self.program_counter = self.memory.read_u16(0xFFFC);
     }
 
-    pub fn load_and_run(&mut self, program: Vec<u8>) {
+    pub fn load_program(&mut self, program: Vec<u8>) {
         self.memory.load(program);
         self.reset();
-        self.run()
     }
 
     fn get_operand_address(&mut self, mode: &AddressingMode) -> u16 {
@@ -175,71 +175,69 @@ impl CPU {
         };
     }
 
-    pub fn run(&mut self) {
-        loop {
-            let instruction_hex = self.memory.read(self.program_counter);
-            let instruction = CPU_OPCODES.get(&instruction_hex).unwrap_or_else(|| panic!("Failed to retrieve opcode!"));
-            self.program_counter += 1;
+    pub fn execute_instruction(&mut self) {
+        let instruction_hex = self.memory.read(self.program_counter);
+        let instruction = CPU_OPCODES.get(&instruction_hex).unwrap_or_else(|| panic!("Failed to retrieve opcode!"));
+        self.program_counter += 1;
 
-            match instruction.opcode {
-                Opcode::ADC => self.adc(instruction),
-                Opcode::AND => self.and(instruction),
-                Opcode::ASL => self.asl(instruction),
-                Opcode::BCC => self.bcc(),
-                Opcode::BCS => self.bcs(),
-                Opcode::BEQ => self.beq(),
-                Opcode::BIT => self.bit(instruction),
-                Opcode::BMI => self.bmi(),
-                Opcode::BNE => self.bne(),
-                Opcode::BPL => self.bpl(),
-                Opcode::BRK => return,
-                Opcode::BVC => self.bvc(),
-                Opcode::BVS => self.bvs(),
-                Opcode::CLC => self.clc(),
-                Opcode::CLD => {},
-                Opcode::CLI => self.cli(),
-                Opcode::CLV => self.clv(),
-                Opcode::CMP => self.cmp(instruction),
-                Opcode::CPX => self.cpx(instruction),
-                Opcode::CPY => self.cpy(instruction),
-                Opcode::DEC => self.dec(instruction),
-                Opcode::DEX => self.dex(),
-                Opcode::DEY => self.dey(),
-                Opcode::EOR => self.eor(instruction),
-                Opcode::INC => self.inc(instruction),
-                Opcode::INX => self.inx(),
-                Opcode::INY => self.iny(),
-                Opcode::JMP => self.jmp(instruction),
-                Opcode::JSR => self.jsr(instruction),
-                Opcode::LDA => self.lda(instruction),
-                Opcode::LDX => self.ldx(instruction),
-                Opcode::LDY => self.ldy(instruction),
-                Opcode::LSR => self.lsr(instruction),
-                Opcode::NOP => {},
-                Opcode::ORA => self.ora(instruction),
-                Opcode::PHA => self.pha(),
-                Opcode::PHP => self.php(),
-                Opcode::PLA => self.pla(),
-                Opcode::PLP => self.plp(),
-                Opcode::ROL => self.rol(instruction),
-                Opcode::ROR => self.ror(instruction),
-                Opcode::RTI => self.rti(),
-                Opcode::RTS => self.rts(),
-                Opcode::SBC => self.sbc(instruction),
-                Opcode::SEC => self.sec(),
-                Opcode::SED => self.sed(),
-                Opcode::SEI => self.sei(),
-                Opcode::STA => self.sta(instruction),
-                Opcode::STX => self.stx(instruction),
-                Opcode::STY => self.sty(instruction),
-                Opcode::TAX => self.tax(),
-                Opcode::TAY => self.tay(),
-                Opcode::TSX => self.tsx(),
-                Opcode::TXA => self.txa(),
-                Opcode::TXS => self.txs(),
-                Opcode::TYA => self.tya(),
-            }
-            self.program_counter += (instruction.bytes - 1) as u16;
+        match instruction.opcode {
+            Opcode::ADC => self.adc(instruction),
+            Opcode::AND => self.and(instruction),
+            Opcode::ASL => self.asl(instruction),
+            Opcode::BCC => self.bcc(),
+            Opcode::BCS => self.bcs(),
+            Opcode::BEQ => self.beq(),
+            Opcode::BIT => self.bit(instruction),
+            Opcode::BMI => self.bmi(),
+            Opcode::BNE => self.bne(),
+            Opcode::BPL => self.bpl(),
+            Opcode::BRK => return,
+            Opcode::BVC => self.bvc(),
+            Opcode::BVS => self.bvs(),
+            Opcode::CLC => self.clc(),
+            Opcode::CLD => {},
+            Opcode::CLI => self.cli(),
+            Opcode::CLV => self.clv(),
+            Opcode::CMP => self.cmp(instruction),
+            Opcode::CPX => self.cpx(instruction),
+            Opcode::CPY => self.cpy(instruction),
+            Opcode::DEC => self.dec(instruction),
+            Opcode::DEX => self.dex(),
+            Opcode::DEY => self.dey(),
+            Opcode::EOR => self.eor(instruction),
+            Opcode::INC => self.inc(instruction),
+            Opcode::INX => self.inx(),
+            Opcode::INY => self.iny(),
+            Opcode::JMP => self.jmp(instruction),
+            Opcode::JSR => self.jsr(instruction),
+            Opcode::LDA => self.lda(instruction),
+            Opcode::LDX => self.ldx(instruction),
+            Opcode::LDY => self.ldy(instruction),
+            Opcode::LSR => self.lsr(instruction),
+            Opcode::NOP => {},
+            Opcode::ORA => self.ora(instruction),
+            Opcode::PHA => self.pha(),
+            Opcode::PHP => self.php(),
+            Opcode::PLA => self.pla(),
+            Opcode::PLP => self.plp(),
+            Opcode::ROL => self.rol(instruction),
+            Opcode::ROR => self.ror(instruction),
+            Opcode::RTI => self.rti(),
+            Opcode::RTS => self.rts(),
+            Opcode::SBC => self.sbc(instruction),
+            Opcode::SEC => self.sec(),
+            Opcode::SED => self.sed(),
+            Opcode::SEI => self.sei(),
+            Opcode::STA => self.sta(instruction),
+            Opcode::STX => self.stx(instruction),
+            Opcode::STY => self.sty(instruction),
+            Opcode::TAX => self.tax(),
+            Opcode::TAY => self.tay(),
+            Opcode::TSX => self.tsx(),
+            Opcode::TXA => self.txa(),
+            Opcode::TXS => self.txs(),
+            Opcode::TYA => self.tya(),
         }
+        self.program_counter += (instruction.bytes - 1) as u16;
     }
 }

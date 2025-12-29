@@ -1,51 +1,35 @@
-import { useState } from "react";
-import reactLogo from "../public/react.svg";
-import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  return <main className="bg-slate-700 flex divide-x-2 divide-black w-screen h-screen">
+    <section className="flex-1">
+      <div className="flex flex-col m-8 outline-2 outline-slate-600 rounded">
+        <h3 className="text-white font-bold w-full p-1">
+          Memory
+        </h3>
+        <div className="bg-slate-600 flex flex-col gap-3 p-2 text-white">
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
-
-  return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        </div>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
-  );
+    </section>
+    <section className="flex-1">
+      <div className="flex flex-col m-8 outline-2 outline-slate-600 rounded">
+        <h3 className="text-white font-bold w-full p-1">
+          CPU State
+        </h3>
+        <div className="bg-slate-600 flex flex-col gap-3 p-2 text-white">
+          <h3>Registers:</h3>
+          <div className="flex flex-col gap-3 pl-10">
+            <div>A: <span className="bg-slate-800 p-1 rounded">Test</span></div>
+            <div>X: <span className="bg-slate-800 p-1 rounded">Test</span></div>
+            <div>Y: <span className="bg-slate-800 p-1 rounded">Test</span></div>
+            <div>PC: <span className="bg-slate-800 p-1 rounded">Test</span></div>
+          </div>
+          <div>Status Flag: <span className="bg-slate-800 p-1 rounded">Test</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
 }
 
 export default App;

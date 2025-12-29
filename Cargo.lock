@@ -3236,6 +3236,7 @@ name = "serun"
 version = "0.1.0"
 dependencies = [
  "phf 0.12.1",
+ "serde",
 ]
 
 [[package]]
@@ -3535,6 +3536,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "serun",
  "tauri 2.9.5",
  "tauri-build",
  "tauri-plugin-opener",

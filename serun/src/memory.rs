@@ -1,11 +1,14 @@
+use serde::Serialize;
+
+#[derive(Clone, Serialize)]
 pub struct Memory {
-    memory: [u8; 0xFFFF],
+    memory: Vec<u8>,
 }
 
 impl Default for Memory {
     fn default() -> Self {
         Memory {
-            memory: [0; 0xFFFF]
+            memory: vec![0; 0xFFFF]
         }
     }
 }
