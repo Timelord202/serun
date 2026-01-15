@@ -1,78 +1,56 @@
-use serun::{cpu, cartridge};
-use tauri::{Emitter, Manager, State};
+use std::{sync::{Mutex}};
+
+use serun::{cpu, memory};
+use tauri::{Manager, State};
 use serde::Serialize;
-use std::sync::{LazyLock, Mutex};
 
-static CPU: LazyLock<Mutex<cpu::CPU>> = LazyLock::new(|| {
-    Mutex::new(cpu::CPU::default())
-});
-
-// #[derive(Clone, Serialize)]
-// #[serde(rename_all = "camelCase", rename_all_fields = "camelCase", tag = "event", content = "data")]
-// enum CpuDto {
-//     pc
-// }
-
-struct AppState {
-    is_running: bool
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase", tag = "event")]
+struct CpuDTO {
+    register_a: u8,
+    register_x: u8,
+    register_y: u8,
+    stack_pointer: u8,
+    program_counter: u16,
+    status: u8,
+    memory: memory::Memory,
 }
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
-fn initialize_program(filepath: &str) {
-    let cartridge = cartridge::Cartidge::from_path(filepath).unwrap();
-    let mut cpu = CPU.lock().unwrap();
-    cpu.load_program(cartridge.prg_rom);
-}
-
-#[tauri::command]
-fn execute_program(state: State<'_, AppState>) {
-    let mut cpu = CPU.lock().unwrap();
-    
-    while state.is_running {
-        cpu.execute_instruction();
+impl CpuDTO {
+    fn new(cpu_state: &cpu::CPU) -> Self {
+        Self {
+            register_a: cpu_state.register_a,
+            register_x: cpu_state.register_x,
+            register_y: cpu_state.register_y,
+            stack_pointer: cpu_state.stack_pointer,
+            program_counter: cpu_state.program_counter,
+            status: cpu_state.status,
+            memory: cpu_state.memory.clone(),
+        }
     }
 }
 
+#[derive(Default)]
+struct AppState {
+    cpu: cpu::CPU
+}
+
 #[tauri::command]
-fn execute_instruction() {
-    let mut cpu = CPU.lock().unwrap();
-    cpu.execute_instruction();
+fn execute_instruction(state: State<'_, Mutex<AppState>>) -> CpuDTO  {
+  let mut state = state.lock().unwrap();
+  state.cpu.execute_instruction();
+  CpuDTO::new(&state.cpu)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let initial_state = AppState {
-                is_running: false,
-            };
-            app.manage(initial_state);
-            let app_handle = app.handle();
-            let app_state  = app.state::<AppState>();
-            let is_running = app_state.is_running.clone();
-            tauri::async_runtime::spawn(async move {
-                loop {
-                    if is_running {
-                        let mut cpu = CPU.lock().unwrap();
-                        cpu.execute_instruction();
-                        // app_handle.emit("cpu-instruction-complete", payload);
-                    }
-                }
-            });
+            app.manage(Mutex::new(AppState::default()));
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![
-            greet,
-            initialize_program,
-            execute_program,
-            execute_instruction
-        ])
+        .invoke_handler(tauri::generate_handler![execute_instruction])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
