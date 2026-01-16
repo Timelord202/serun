@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { Cpu } from "./types/cpu";
 import "./App.css";
 
 function App() {
-  const [cpuState, setCpuState] = useState(null);
+  const [cpuState, setCpuState] = useState<Cpu | null>(null);
 
   return (
     <main className="bg-slate-700 flex divide-x-2 divide-black w-screen h-screen">
@@ -41,6 +42,12 @@ function App() {
                 PC:{" "}
                 <span className="bg-slate-800 p-1 rounded">
                   {cpuState?.programCounter}
+                </span>
+              </div>
+              <div>
+                SP:{" "}
+                <span className="bg-slate-800 p-1 rounded">
+                  {cpuState?.stackPointer}
                 </span>
               </div>
             </div>
