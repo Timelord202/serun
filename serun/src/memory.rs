@@ -2,24 +2,24 @@ use serde::Serialize;
 
 #[derive(Clone, Serialize)]
 pub struct Memory {
-    memory: Vec<u8>,
+    pub raw_memory: Vec<u8>,
 }
 
 impl Default for Memory {
     fn default() -> Self {
         Memory {
-            memory: vec![0; 0xFFFF]
+            raw_memory: vec![0; 0xFFFF]
         }
     }
 }
 
 impl Memory {
     pub fn read(&self, addr: u16) -> u8 {
-        self.memory[addr as usize]
+        self.raw_memory[addr as usize]
     }
 
     pub fn write(&mut self, addr: u16, data: u8) {
-        self.memory[addr as usize] = data;
+        self.raw_memory[addr as usize] = data;
     }
 
     pub fn read_u16(&mut self, pos: u16) -> u16 {
@@ -36,7 +36,7 @@ impl Memory {
     }
 
     pub fn load(&mut self, program: Vec<u8>) {
-        self.memory[0x8000..(0x8000 + program.len())].copy_from_slice(&program[..]);
+        self.raw_memory[0x8000..(0x8000 + program.len())].copy_from_slice(&program[..]);
         self.write_u16(0xFFFC, 0x8000);
     }
 }

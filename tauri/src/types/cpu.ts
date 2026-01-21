@@ -1,3 +1,4 @@
+// Translated from CpuDTO struct in /tauri/src-tauri/src
 export type Cpu = {
     registerA: number,
     registerX: number,
