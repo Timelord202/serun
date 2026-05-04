@@ -1,6 +1,5 @@
 use crate::memory::Memory;
 use crate::opcodes::{CPU_OPCODES, AddressingMode, Instruction, Opcode};
-use serde::Serialize;
 
 pub mod instructions;
 
@@ -17,7 +16,7 @@ pub enum StatusFlag {
     N
 }
 
-#[derive(Default, Clone, Serialize)]
+#[derive(Default, Clone)]
 pub struct CPU {
     pub register_a: u8,
     pub register_x: u8,
