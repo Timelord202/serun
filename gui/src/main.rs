@@ -1,10 +1,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 #![expect(rustdoc::missing_crate_level_docs)] // it's an example
 
+use serun::cpu;
+use serun::cartridge;
 use eframe::egui;
 
 fn main() -> eframe::Result {
-    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
+    env_logger::init();
+
+    // TODO: Run in a separate thread
+    let mut cpu = cpu::CPU::default();
+    let cart = cartridge::Cartidge::from_path("./tests/nestest.nes").unwrap();
+    cpu.load_program(cart.prg_rom);
+
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
         ..Default::default()
@@ -18,6 +26,7 @@ fn main() -> eframe::Result {
     )
 }
 
+#[derive(Default)]
 struct DebugInfo {
     register_a: u8,
     register_x: u8,
@@ -25,19 +34,6 @@ struct DebugInfo {
     stack_pointer: u8,
     program_counter: u16,
     status: u8,
-}
-
-impl Default for DebugInfo {
-    fn default() -> Self {
-        Self {
-            register_a: 0,
-            register_x: 0,
-            register_y: 0,
-            stack_pointer: 0,
-            program_counter: 0,
-            status: 0,
-        }
-    }
 }
 
 impl eframe::App for DebugInfo {
