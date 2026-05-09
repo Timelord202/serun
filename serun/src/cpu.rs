@@ -176,8 +176,10 @@ impl CPU {
 
     pub fn execute_instruction(&mut self) {
         let instruction_hex = self.memory.read(self.program_counter);
+        println!("Instruction hex: {}", instruction_hex);
         let instruction = CPU_OPCODES.get(&instruction_hex).unwrap_or_else(|| panic!("Failed to retrieve opcode!"));
         self.program_counter += 1;
+        println!("Found instruction {:?}, pc: {}", instruction, self.program_counter);
 
         match instruction.opcode {
             Opcode::ADC => self.adc(instruction),
@@ -238,5 +240,13 @@ impl CPU {
             Opcode::TYA => self.tya(),
         }
         self.program_counter += (instruction.bytes - 1) as u16;
+    }
+
+
+    pub fn run<F: Fn()>(&mut self, callback: F) {
+        loop {
+            self.execute_instruction();
+            callback();
+        }
     }
 }
