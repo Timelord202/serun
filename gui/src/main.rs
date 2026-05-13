@@ -44,6 +44,7 @@ struct CpuSnapshot {
     stack_pointer: u8,
     program_counter: u16,
     status: u8,
+    memory: Vec<u8>
 }
 
 impl From<&cpu::CPU> for CpuSnapshot {
@@ -55,6 +56,7 @@ impl From<&cpu::CPU> for CpuSnapshot {
             stack_pointer: data.stack_pointer,
             program_counter: data.program_counter,
             status: data.status,
+            memory: Vec::new()
         }
     }
 }
@@ -80,12 +82,33 @@ impl eframe::App for CpuState {
         }
 
         egui::CentralPanel::default().show_inside(ui, |ui| {
-            ui.label(format!("a: 0x{}", self.state.register_a));
-            ui.label(format!("x: 0x{}", self.state.register_x));
-            ui.label(format!("y: 0x{}", self.state.register_y));
-            ui.label(format!("sp: 0x{}", self.state.stack_pointer));
-            ui.label(format!("pc: 0x{}", self.state.program_counter));
-            ui.label(format!("status: 0x{}", self.state.status));
+            ui.horizontal(|ui| {
+                ui.vertical(|ui| {
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                    ui.label("0x0: 0x0");
+                });
+
+                ui.add_space(10.0);
+                ui.separator();
+                ui.add_space(10.0);
+
+                ui.vertical(|ui| {
+                    ui.label(format!("a: 0x{}", self.state.register_a));
+                    ui.label(format!("x: 0x{}", self.state.register_x));
+                    ui.label(format!("y: 0x{}", self.state.register_y));
+                    ui.label(format!("sp: 0x{}", self.state.stack_pointer));
+                    ui.label(format!("pc: 0x{}", self.state.program_counter));
+                    ui.label(format!("status: 0x{}", self.state.status));
+                });
+            });
         });
 
         ui.request_repaint();
