@@ -774,6 +774,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
 
 [[package]]
+name = "debug"
+version = "0.1.0"
+dependencies = [
+ "eframe",
+ "env_logger",
+ "serun",
+]
+
+[[package]]
 name = "dispatch"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1406,15 +1415,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fdf242682df893b86f33a73828fb09ca4b2d3bb6cc95249707fc684d27484b91"
 dependencies = [
  "bitflags 2.11.1",
-]
-
-[[package]]
-name = "gui"
-version = "0.1.0"
-dependencies = [
- "eframe",
- "env_logger",
- "serun",
 ]
 
 [[package]]
