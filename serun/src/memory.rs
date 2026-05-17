@@ -6,7 +6,7 @@ pub struct Memory {
 impl Default for Memory {
     fn default() -> Self {
         Memory {
-            raw_memory: vec![0; 0xFFFF]
+            raw_memory: vec![0; 0x10000]
         }
     }
 }

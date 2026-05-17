@@ -8,6 +8,11 @@ use egui::{RichText, Color32};
 use std::sync::mpsc::Receiver;
 use std::thread;
 use std::sync::mpsc;
+use std::cmp;
+
+// Controls how many addresses are displayed in the debugger
+const DEBUG_ADDRS: usize = 11;
+const MEM_LEN: usize = 0x10000;
 
 fn main() -> eframe::Result {
     env_logger::init();
@@ -20,9 +25,22 @@ fn main() -> eframe::Result {
         loop {
             cpu.execute_instruction();
             let pc = cpu.program_counter as usize;
-            let memory = cpu.memory.raw_memory[pc-5..pc+6].to_vec();
+            let min_addr = cmp::min(
+                MEM_LEN - DEBUG_ADDRS,
+                pc.saturating_sub(DEBUG_ADDRS / 2),
+            );
+            let max_addr = cmp::min(
+                MEM_LEN,
+                min_addr + DEBUG_ADDRS,
+            );
+            let memory = cpu.memory.raw_memory[min_addr..max_addr].to_vec();
             tx.send(CpuSnapshot::from_cpu(&cpu, memory)).unwrap();
-            thread::sleep(std::time::Duration::from_millis(1));
+            if pc >= 0xFFFF - DEBUG_ADDRS {
+                thread::sleep(std::time::Duration::from_secs(1));
+            }
+            else {
+                thread::sleep(std::time::Duration::from_millis(1));
+            }
         }
     });
 
@@ -103,20 +121,30 @@ impl eframe::App for CpuState {
                 ui.separator();
                 ui.add_space(10.0);
 
+                // Displays memory addresses
                 ui.vertical(|ui| {
-                    // TODO: clean this up
                     let pc = self.state.program_counter as usize;
-                    ui.label(format!("{:X}: {:X}", pc - 5, self.state.memory[0]));
-                    ui.label(format!("{:X}: {:X}", pc - 4, self.state.memory[1]));
-                    ui.label(format!("{:X}: {:X}", pc - 3, self.state.memory[2]));
-                    ui.label(format!("{:X}: {:X}", pc - 2, self.state.memory[3]));
-                    ui.label(format!("{:X}: {:X}", pc - 1, self.state.memory[4]));
-                    ui.label(RichText::new(format!("{:X}: {:X}", self.state.program_counter, self.state.memory[5])).color(Color32::GREEN));
-                    ui.label(format!("{:X}: {:X}", pc + 1, self.state.memory[6]));
-                    ui.label(format!("{:X}: {:X}", pc + 2, self.state.memory[7]));
-                    ui.label(format!("{:X}: {:X}", pc + 3, self.state.memory[8]));
-                    ui.label(format!("{:X}: {:X}", pc + 4, self.state.memory[9]));
-                    ui.label(format!("{:X}: {:X}", pc + 5, self.state.memory[10]));
+                    let mem_len = self.state.memory.len();
+                    let half_mem_len = mem_len / 2;
+                    let max_addr = 0xFFFFusize;
+                    let start_addr = if pc < half_mem_len {
+                        0
+                    } else if pc > max_addr - half_mem_len {
+                        max_addr - mem_len + 1
+                    } else {
+                        pc - half_mem_len
+                    };
+
+                    for i in 0..mem_len {
+                        let addr = start_addr + i;
+                        let text = format!("{:04X}: {:02X}", addr, self.state.memory[i]);
+
+                        if addr == pc {
+                            ui.label(RichText::new(text).color(Color32::GREEN));
+                        } else {
+                            ui.label(text);
+                        }
+                    }
                 });
             });
         });
