@@ -192,12 +192,12 @@ impl CPU {
 
     pub fn rti(&mut self) {
         self.status = self.pop_stack();
-        self.program_counter = self.pop_stack_u16();
+        self.pc = self.pop_stack_u16();
     }
 
     pub fn rts(&mut self) {
         let stack_val = self.pop_stack_u16();
-        self.program_counter = stack_val.wrapping_add(1);
+        self.pc = stack_val.wrapping_add(1);
     }
 
     pub fn sec(&mut self) {
@@ -316,8 +316,8 @@ impl CPU {
     fn branch(&mut self, flag: StatusFlag, require_flag_is_set: bool) {
         let flag = self.get_status_flag(flag);
         if (require_flag_is_set && flag == 1) || (!require_flag_is_set && flag == 0) {
-            let displacement = self.memory.read(self.program_counter);
-            self.program_counter += self.program_counter.wrapping_add(displacement as u16);
+            let displacement = self.memory.read(self.pc);
+            self.pc += self.pc.wrapping_add(displacement as u16);
         }
     }
 
@@ -386,12 +386,12 @@ impl CPU {
 
     // TODO: Need to account for 6502 bug
     pub fn jmp(&mut self, instruction: &Instruction) {
-        self.program_counter = self.get_operand_address(&instruction.addressing_mode);
+        self.pc = self.get_operand_address(&instruction.addressing_mode);
     }
 
     pub fn jsr(&mut self, instruction: &Instruction) {
         let operand_address = self.get_operand_address(&instruction.addressing_mode);
-        self.program_counter = operand_address.wrapping_sub(1);
+        self.pc = operand_address.wrapping_sub(1);
         self.push_stack_u16(operand_address);
     }
 

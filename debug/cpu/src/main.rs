@@ -24,7 +24,7 @@ fn main() -> eframe::Result {
         cpu.load_program(cart.prg_rom);
         loop {
             cpu.execute_instruction();
-            let pc = cpu.program_counter as usize;
+            let pc = cpu.pc as usize;
             let min_addr = cmp::min(
                 MEM_LEN - DEBUG_ADDRS,
                 pc.saturating_sub(DEBUG_ADDRS / 2),
@@ -63,7 +63,7 @@ struct CpuSnapshot {
     register_x: u8,
     register_y: u8,
     stack_pointer: u8,
-    program_counter: u16,
+    pc: u16,
     status: u8,
     memory: Vec<u8>
 }
@@ -75,7 +75,7 @@ impl CpuSnapshot {
             register_x: data.register_x,
             register_y: data.register_y,
             stack_pointer: data.stack_pointer,
-            program_counter: data.program_counter,
+            pc: data.pc,
             status: data.status,
             memory
         }
@@ -112,7 +112,7 @@ impl eframe::App for CpuState {
                     });
                     ui.horizontal(|ui| {
                         ui.label(format!("sp: {:X}", self.state.stack_pointer));
-                        ui.label(format!("pc: {:X}", self.state.program_counter));
+                        ui.label(format!("pc: {:X}", self.state.pc));
                         ui.label(format!("status: {:X}", self.state.status));
                     });
                 });
@@ -123,7 +123,7 @@ impl eframe::App for CpuState {
 
                 // Displays memory addresses
                 ui.vertical(|ui| {
-                    let pc = self.state.program_counter as usize;
+                    let pc = self.state.pc as usize;
                     let mem_len = self.state.memory.len();
                     let half_mem_len = mem_len / 2;
                     let max_addr = 0xFFFFusize;

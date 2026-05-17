@@ -22,7 +22,7 @@ pub struct CPU {
     pub register_x: u8,
     pub register_y: u8,
     pub stack_pointer: u8,
-    pub program_counter: u16,
+    pub pc: u16,
     pub status: u8,
     pub memory: Memory,
 }
@@ -33,7 +33,7 @@ impl CPU {
         self.register_x = 0;
         self.status = 0;
         self.stack_pointer = SP_INITIAL_ADDR;
-        self.program_counter = self.memory.read_u16(0xFFFC);
+        self.pc = self.memory.read_u16(0xFFFC);
     }
 
     pub fn load_program(&mut self, program: Vec<u8>) {
@@ -43,39 +43,39 @@ impl CPU {
 
     fn get_operand_address(&mut self, mode: &AddressingMode) -> u16 {
         match mode {
-            AddressingMode::Immediate => self.program_counter,
+            AddressingMode::Immediate => self.pc,
 
-            AddressingMode::ZeroPage => self.memory.read(self.program_counter) as u16,
+            AddressingMode::ZeroPage => self.memory.read(self.pc) as u16,
 
-            AddressingMode::Absolute => self.memory.read_u16(self.program_counter),
+            AddressingMode::Absolute => self.memory.read_u16(self.pc),
 
             AddressingMode::ZeroPage_X => {
-                let pos = self.memory.read(self.program_counter);
+                let pos = self.memory.read(self.pc);
                 pos.wrapping_add(self.register_x) as u16
             }
 
             AddressingMode::ZeroPage_Y => {
-                let pos = self.memory.read(self.program_counter);
+                let pos = self.memory.read(self.pc);
                 pos.wrapping_add(self.register_y) as u16
             }
 
             AddressingMode::Absolute_X => {
-                let base = self.memory.read_u16(self.program_counter);
+                let base = self.memory.read_u16(self.pc);
                 base.wrapping_add(self.register_x as u16)
             }
 
             AddressingMode::Absolute_Y => {
-                let base = self.memory.read_u16(self.program_counter);
+                let base = self.memory.read_u16(self.pc);
                 base.wrapping_add(self.register_y as u16)
             }
 
             AddressingMode::Indirect => {
-                let operand_address = self.memory.read_u16(self.program_counter);
+                let operand_address = self.memory.read_u16(self.pc);
                 self.memory.read_u16(operand_address)
             }
 
             AddressingMode::Indirect_X => {
-                let base = self.memory.read(self.program_counter);
+                let base = self.memory.read(self.pc);
                 let ptr = base.wrapping_add(self.register_x);
                 let lo = self.memory.read(ptr as u16);
                 let hi = self.memory.read(ptr.wrapping_add(1) as u16);
@@ -83,7 +83,7 @@ impl CPU {
             }
 
             AddressingMode::Indirect_Y => {
-                let base = self.memory.read(self.program_counter);
+                let base = self.memory.read(self.pc);
                 let lo = self.memory.read(base as u16);
                 let hi = self.memory.read(base.wrapping_add(1) as u16);
                 let deref_base = (hi as u16) << 8 | (lo as u16);
@@ -175,11 +175,11 @@ impl CPU {
     }
 
     pub fn execute_instruction(&mut self) {
-        let instruction_hex = self.memory.read(self.program_counter);
+        let instruction_hex = self.memory.read(self.pc);
         println!("Instruction hex: {}", instruction_hex);
         let instruction = CPU_OPCODES.get(&instruction_hex).unwrap_or_else(|| panic!("Failed to retrieve opcode!"));
-        self.program_counter += 1;
-        println!("Found instruction {:?}, pc: {}", instruction, self.program_counter);
+        self.pc += 1;
+        println!("Found instruction {:?}, pc: {}", instruction, self.pc);
 
         match instruction.opcode {
             Opcode::ADC => self.adc(instruction),
@@ -239,7 +239,7 @@ impl CPU {
             Opcode::TXS => self.txs(),
             Opcode::TYA => self.tya(),
         }
-        self.program_counter += (instruction.bytes - 1) as u16;
+        self.pc += (instruction.bytes - 1) as u16;
     }
 
 
