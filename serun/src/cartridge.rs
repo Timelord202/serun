@@ -1,4 +1,4 @@
-use std::{fmt, fs};
+use std::{fmt, fs, path::PathBuf};
 
 const NES_HEADER_PREFIX: [u8; 4] = [0x4E, 0x45, 0x53, 0x1A];
 const PRG_ROM_UNIT_SIZE: usize = 16384;
@@ -33,7 +33,7 @@ impl Cartidge {
         }
     }
 
-    pub fn from_path(path: &str) -> Result<Cartidge, CartidgeError> {
+    pub fn from_path(path: PathBuf) -> Result<Cartidge, CartidgeError> {
         let bytes = fs::read(path);
         match bytes {
             Ok(data) => Self::from_bytes(data),

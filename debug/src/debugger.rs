@@ -1,6 +1,4 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![expect(rustdoc::missing_crate_level_docs)]
-
+use std::path::PathBuf;
 use serun::cpu;
 use serun::cartridge;
 use eframe::egui;
@@ -14,14 +12,14 @@ use std::cmp;
 const DEBUG_ADDRS: usize = 11;
 const MEM_LEN: usize = 0x10000;
 
-fn main() -> eframe::Result {
-    env_logger::init();
+pub fn run_debugger(path: PathBuf) -> eframe::Result {
     let (tx, rx) = mpsc::channel();
 
     thread::spawn(move || {
         let mut cpu = cpu::CPU::default();
-        let cart = cartridge::Cartidge::from_path("./tests/nestest.nes").unwrap();
+        let cart = cartridge::Cartidge::from_path(path).unwrap();
         cpu.load_program(cart.prg_rom);
+        // TODO: Find better way to run cpu and send info across threads
         loop {
             cpu.execute_instruction();
             let pc = cpu.pc as usize;
@@ -35,12 +33,7 @@ fn main() -> eframe::Result {
             );
             let memory = cpu.memory.raw_memory[min_addr..max_addr].to_vec();
             tx.send(CpuSnapshot::from_cpu(&cpu, memory)).unwrap();
-            if pc >= 0xFFFF - DEBUG_ADDRS {
-                thread::sleep(std::time::Duration::from_secs(1));
-            }
-            else {
-                thread::sleep(std::time::Duration::from_millis(1));
-            }
+            thread::sleep(std::time::Duration::from_millis(1));
         }
     });
 
