@@ -6,4 +6,4 @@ edition = "2024"
 [dependencies]
 eframe = "0.34.2"
 env_logger = { version = "0.11.10", features = ["auto-color", "humantime"] }
-serun = { path = "../serun" }
+serun = { path = "../../serun" }
