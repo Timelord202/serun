@@ -45,7 +45,7 @@ pub fn run_debugger(path: PathBuf) -> eframe::Result {
         "CPU Debugger",
         options,
         Box::new(|_cc| {
-            Ok(Box::new(CpuState::new(rx)))
+            Ok(Box::new(CpuReceiver::new(rx)))
         }),
     )
 }
@@ -75,12 +75,12 @@ impl CpuSnapshot {
     }
 }
 
-struct CpuState {
+struct CpuReceiver {
     rx: Receiver<CpuSnapshot>,
     state: CpuSnapshot
 }
 
-impl CpuState {
+impl CpuReceiver {
     fn new(rx: Receiver<CpuSnapshot>) -> Self {
         Self {
             rx,
@@ -89,7 +89,7 @@ impl CpuState {
     }
 }
 
-impl eframe::App for CpuState {
+impl eframe::App for CpuReceiver {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         while let Ok(snapshot) = self.rx.try_recv() {
             self.state = snapshot;
