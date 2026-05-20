@@ -3,7 +3,7 @@
 
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
-use debug::debugger;
+use debug::{debugger, suites};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -44,11 +44,10 @@ fn main() {
         Some(Commands::Test { test_suite }) => {
             match test_suite {
                 AvailableTests::Cpu => {
-                    println!("TODO: Still developing cpu test suite");
+                    suites::cpu::run_tests();
                 }
             }
         },
         None => {}
     };
 }
-

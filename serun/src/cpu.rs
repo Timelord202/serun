@@ -16,7 +16,7 @@ pub enum StatusFlag {
     N
 }
 
-#[derive(Default, Clone)]
+#[derive(Default)]
 pub struct CPU {
     pub register_a: u8,
     pub register_x: u8,
@@ -24,6 +24,8 @@ pub struct CPU {
     pub stack_pointer: u8,
     pub pc: u16,
     pub status: u8,
+    // TODO: This won't work for testing when a Bus is implemented.
+    // Will need to fix so that this can be used with a Bus or Ram
     pub memory: Memory,
 }
 
