@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fmt::{Binary, LowerHex};
 use std::fs::File;
 use std::io::BufReader;
 use serun::cpu;
@@ -34,7 +35,7 @@ fn get_test_scenarios(path: &str) -> Vec<TestScenario> {
 fn load_test_scenario(cpu: &mut cpu::CPU, scenario: &TestScenario) {
     cpu.pc = scenario.initial.pc;
     cpu.register_a = scenario.initial.a;
-    cpu.register_a = scenario.initial.x;
+    cpu.register_x = scenario.initial.x;
     cpu.status = scenario.initial.p;
     cpu.register_y = scenario.initial.y;
 
@@ -43,17 +44,39 @@ fn load_test_scenario(cpu: &mut cpu::CPU, scenario: &TestScenario) {
     }
 }
 
-fn verify_test_results(cpu: &cpu::CPU, scenario: &TestScenario) {
-    // TODO: Implement
+fn format_bin<T: Binary>(val: T) -> String {
+    format!("{:b}", val)
 }
 
+fn format_hex<T: LowerHex>(val: T) -> String {
+    format!("{:x}", val)
+}
+
+fn verify_test_results(cpu: &cpu::CPU, scenario: &TestScenario) {
+    assert_eq!(format_hex(cpu.pc), format_hex(scenario.r#final.pc), "pc isn't correct!");
+    assert_eq!(format_hex(cpu.register_a), format_hex(scenario.r#final.a), "a register isn't correct!");
+    assert_eq!(format_hex(cpu.register_x), format_hex(scenario.r#final.x), "x register isn't correct!");
+    assert_eq!(format_bin(cpu.status), format_bin(scenario.r#final.p), "status register isn't correct!");
+    assert_eq!(format_hex(cpu.register_y), format_hex(scenario.r#final.y), "y register isn't correct!");
+
+    for (addr, val) in &scenario.r#final.ram {
+        assert_eq!(cpu.memory.read(*addr), *val, "ram values don't match at addr {}!", addr);
+    }
+}
+
+// TODO: Add proper logging
 pub fn run_tests() {
     let mut cpu = cpu::CPU::default();
     let scenarios = get_test_scenarios("./tests/json/00.json");
 
-    for scenario in scenarios {
+    for (i, scenario) in scenarios.iter().enumerate() {
+        println!("Running test {}...", i + 1);
         load_test_scenario(&mut cpu, &scenario);
+        cpu.execute_instruction();
         verify_test_results(&cpu, &scenario);
-        cpu.memory.raw_memory.clear();
+        cpu.memory.raw_memory.fill(0);
+        println!("Completed test {}!", i + 1);
     }
+
+    println!("Successfully finished testing!");
 }
