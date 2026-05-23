@@ -178,10 +178,8 @@ impl CPU {
 
     pub fn execute_instruction(&mut self) {
         let instruction_hex = self.memory.read(self.pc);
-        println!("Instruction hex: {}", instruction_hex);
         let instruction = CPU_OPCODES.get(&instruction_hex).unwrap_or_else(|| panic!("Failed to retrieve opcode!"));
-        self.pc += 1;
-        println!("Found instruction {:?}, pc: {}", instruction, self.pc);
+        let pc_before_instruction = self.pc;
 
         match instruction.opcode {
             Opcode::ADC => self.adc(instruction),
@@ -194,7 +192,7 @@ impl CPU {
             Opcode::BMI => self.bmi(),
             Opcode::BNE => self.bne(),
             Opcode::BPL => self.bpl(),
-            Opcode::BRK => return,
+            Opcode::BRK => self.brk(),
             Opcode::BVC => self.bvc(),
             Opcode::BVS => self.bvs(),
             Opcode::CLC => self.clc(),
@@ -241,14 +239,10 @@ impl CPU {
             Opcode::TXS => self.txs(),
             Opcode::TYA => self.tya(),
         }
-        self.pc += (instruction.bytes - 1) as u16;
-    }
 
-
-    pub fn run<F: Fn()>(&mut self, callback: F) {
-        loop {
-            self.execute_instruction();
-            callback();
+        // pc is incremented if it hasn't been set during previous instruction
+        if pc_before_instruction == self.pc {
+            self.pc += instruction.bytes as u16;
         }
     }
 }

@@ -376,6 +376,13 @@ impl CPU {
         self.branch(StatusFlag::N, false);
     }
 
+    pub fn brk(&mut self) {
+        self.push_stack_u16(self.pc.wrapping_add(2));
+        self.push_stack(self.status | 0b0011_0000);
+        self.set_status_flag(StatusFlag::I);
+        self.pc = self.memory.read_u16(0xFFFE);
+    }
+
     pub fn bvc(&mut self) {
         self.branch(StatusFlag::V, false);
     }
