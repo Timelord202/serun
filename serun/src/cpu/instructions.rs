@@ -238,7 +238,7 @@ impl CPU {
     }
 
     pub fn tsx(&mut self) {
-        self.register_x = self.stack_pointer;
+        self.register_x = self.sp;
         self.update_zero_and_negative_flags(self.register_x);
     }
 
@@ -248,7 +248,7 @@ impl CPU {
     }
 
     pub fn txs(&mut self) {
-        self.stack_pointer = self.register_x;
+        self.sp = self.register_x;
     }
 
     pub fn tya(&mut self) {

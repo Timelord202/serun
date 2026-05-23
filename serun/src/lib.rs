@@ -57,14 +57,14 @@ mod test {
         cpu.push_stack(0x01);
         cpu.push_stack(0x02);
         cpu.push_stack(0x03);
-        assert_eq!(cpu.stack_pointer, 0xFA);
+        assert_eq!(cpu.sp, 0xFA);
         let val1 = cpu.pop_stack();
         let val2 = cpu.pop_stack();
         let val3 = cpu.pop_stack();
         assert_eq!(val1, 0x03);
         assert_eq!(val2, 0x02);
         assert_eq!(val3, 0x01);
-        assert_eq!(cpu.stack_pointer, 0xFD);
+        assert_eq!(cpu.sp, 0xFD);
     }
 
     #[test]

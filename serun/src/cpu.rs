@@ -21,7 +21,7 @@ pub struct CPU {
     pub register_a: u8,
     pub register_x: u8,
     pub register_y: u8,
-    pub stack_pointer: u8,
+    pub sp: u8,
     pub pc: u16,
     pub status: u8,
     // TODO: This won't work for testing when a Bus is implemented.
@@ -34,7 +34,7 @@ impl CPU {
         self.register_a = 0;
         self.register_x = 0;
         self.status = 0;
-        self.stack_pointer = SP_INITIAL_ADDR;
+        self.sp = SP_INITIAL_ADDR;
         self.pc = self.memory.read_u16(0xFFFC);
     }
 
@@ -118,8 +118,8 @@ impl CPU {
     }
 
     pub fn push_stack(&mut self, value: u8) {
-        self.memory.write(SP_BASE_ADDR + u16::from(self.stack_pointer), value);
-        self.stack_pointer = self.stack_pointer.wrapping_sub(1);
+        self.memory.write(SP_BASE_ADDR + u16::from(self.sp), value);
+        self.sp = self.sp.wrapping_sub(1);
     }
 
     pub fn push_stack_u16(&mut self, value: u16) {
@@ -130,8 +130,8 @@ impl CPU {
     }
 
     pub fn pop_stack(&mut self) -> u8 {
-        self.stack_pointer = self.stack_pointer.wrapping_add(1);
-        self.memory.read(SP_BASE_ADDR + u16::from(self.stack_pointer))
+        self.sp = self.sp.wrapping_add(1);
+        self.memory.read(SP_BASE_ADDR + u16::from(self.sp))
     }
 
     pub fn pop_stack_u16(&mut self) -> u16 {

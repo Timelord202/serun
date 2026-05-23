@@ -55,7 +55,7 @@ struct CpuSnapshot {
     register_a: u8,
     register_x: u8,
     register_y: u8,
-    stack_pointer: u8,
+    sp: u8,
     pc: u16,
     status: u8,
     memory: Vec<u8>
@@ -67,7 +67,7 @@ impl CpuSnapshot {
             register_a: data.register_a,
             register_x: data.register_x,
             register_y: data.register_y,
-            stack_pointer: data.stack_pointer,
+            sp: data.sp,
             pc: data.pc,
             status: data.status,
             memory
@@ -104,7 +104,7 @@ impl eframe::App for CpuReceiver {
                         ui.label(format!("y: {:X}", self.state.register_y));
                     });
                     ui.horizontal(|ui| {
-                        ui.label(format!("sp: {:X}", self.state.stack_pointer));
+                        ui.label(format!("sp: {:X}", self.state.sp));
                         ui.label(format!("pc: {:X}", self.state.pc));
                         ui.label(format!("status: {:X}", self.state.status));
                     });
