@@ -18,7 +18,11 @@ enum Commands {
     Test {
         /// The test suite to run.
         #[arg(short, long, value_enum)]
-        test_suite: AvailableTests
+        test_suite: AvailableTests,
+
+        /// Which cpu test to run
+        #[arg(short, long)]
+        instruction: Option<String>
     },
     /// Runs the debugger given a path to a .nes file
     Run {
@@ -41,11 +45,11 @@ fn main() {
             // TODO display err message if debugger errors out
             let _ = debugger::run_debugger(path.to_owned());
         },
-        Some(Commands::Test { test_suite }) => {
-            match test_suite {
-                AvailableTests::Cpu => {
-                    suites::cpu::run_tests();
-                }
+        Some(Commands::Test { test_suite: AvailableTests::Cpu, instruction }) => {
+            if let Some(hex) = instruction {
+                suites::cpu::run_one_test(hex);
+            } else {
+                suites::cpu::run_all_tests();
             }
         },
         None => {}

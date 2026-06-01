@@ -44,40 +44,43 @@ impl CPU {
     }
 
     fn get_operand_address(&mut self, mode: &AddressingMode) -> u16 {
+        // PC points to the opcode, need to increment in order to get operand
+        let oper_addr = self.pc + 1;
+
         match mode {
-            AddressingMode::Immediate => self.pc,
+            AddressingMode::Immediate => oper_addr,
 
-            AddressingMode::ZeroPage => self.memory.read(self.pc) as u16,
+            AddressingMode::ZeroPage => self.memory.read(oper_addr) as u16,
 
-            AddressingMode::Absolute => self.memory.read_u16(self.pc),
+            AddressingMode::Absolute => self.memory.read_u16(oper_addr),
 
             AddressingMode::ZeroPage_X => {
-                let pos = self.memory.read(self.pc);
+                let pos = self.memory.read(oper_addr);
                 pos.wrapping_add(self.register_x) as u16
             }
 
             AddressingMode::ZeroPage_Y => {
-                let pos = self.memory.read(self.pc);
+                let pos = self.memory.read(oper_addr);
                 pos.wrapping_add(self.register_y) as u16
             }
 
             AddressingMode::Absolute_X => {
-                let base = self.memory.read_u16(self.pc);
+                let base = self.memory.read_u16(oper_addr);
                 base.wrapping_add(self.register_x as u16)
             }
 
             AddressingMode::Absolute_Y => {
-                let base = self.memory.read_u16(self.pc);
+                let base = self.memory.read_u16(oper_addr);
                 base.wrapping_add(self.register_y as u16)
             }
 
             AddressingMode::Indirect => {
-                let operand_address = self.memory.read_u16(self.pc);
+                let operand_address = self.memory.read_u16(oper_addr);
                 self.memory.read_u16(operand_address)
             }
 
             AddressingMode::Indirect_X => {
-                let base = self.memory.read(self.pc);
+                let base = self.memory.read(oper_addr);
                 let ptr = base.wrapping_add(self.register_x);
                 let lo = self.memory.read(ptr as u16);
                 let hi = self.memory.read(ptr.wrapping_add(1) as u16);

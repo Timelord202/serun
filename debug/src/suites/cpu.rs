@@ -25,7 +25,7 @@ struct TestScenario {
 }
 
 // TODO improve how this is parsing files (account more for errors)
-fn get_test_scenarios(path: &str) -> Vec<TestScenario> {
+fn get_test_scenarios(path: String) -> Vec<TestScenario> {
     let file = File::open(path).unwrap();
     let reader = BufReader::new(file);
     let serialized: Vec<TestScenario> = serde_json::from_reader(reader).unwrap();
@@ -66,11 +66,34 @@ fn verify_test_results(cpu: &cpu::CPU, scenario: &TestScenario) {
     }
 }
 
+// TODO: Generalize both functions
 // TODO: Add proper logging
-pub fn run_tests() {
+pub fn run_all_tests() {
     let mut cpu = cpu::CPU::default();
-    let scenarios = get_test_scenarios("./tests/json/00.json");
+    
+    for i in 0..=0xFF {
+        let path = format!("./tests/json/{:02x}.json", i);
+        let scenarios = get_test_scenarios(path);
+        println!("Testing instruction {:02x}", i);
+        for (j, scenario) in scenarios.iter().enumerate() {
+            println!("Running test {}...", j + 1);
+            load_test_scenario(&mut cpu, scenario);
+            cpu.execute_instruction();
+            verify_test_results(&cpu, scenario);
+            cpu.memory.raw_memory.fill(0);
+            println!("Completed test {}!", j + 1);
+        }
+    }
 
+    println!("Successfully finished testing!");
+}
+
+pub fn run_one_test(hex: &String) {
+    let mut cpu = cpu::CPU::default();
+    let path = format!("./tests/json/{}.json", hex);
+    let scenarios = get_test_scenarios(path);
+
+    println!("Testing instruction {}", hex);
     for (i, scenario) in scenarios.iter().enumerate() {
         println!("Running test {}...", i + 1);
         load_test_scenario(&mut cpu, scenario);
@@ -79,6 +102,4 @@ pub fn run_tests() {
         cpu.memory.raw_memory.fill(0);
         println!("Completed test {}!", i + 1);
     }
-
-    println!("Successfully finished testing!");
 }
