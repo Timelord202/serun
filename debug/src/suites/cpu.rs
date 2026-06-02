@@ -67,11 +67,11 @@ fn verify_test_results(cpu: &cpu::CPU, scenario: &TestScenario) {
     let expected = &scenario.r#final;
 
     assert_eq!(cpu.pc, expected.pc, "PC isn't correct!");
-    assert_eq!(cpu.register_a, expected.a, "a register isn't correct!");
+    assert_eq!(cpu.register_a, expected.a, "Accumulator isn't correct!");
     assert_eq!(cpu.register_x, expected.x, "x register isn't correct!");
-    assert_eq!(cpu.status, expected.p, "status register isn't correct!");
+    assert_eq!(cpu.status, expected.p, "Status register isn't correct!");
     assert_eq!(cpu.register_y, expected.y, "y register isn't correct!");
-    assert_eq!(cpu.sp, expected.s, "stack pointer isn't correct!");
+    assert_eq!(cpu.sp, expected.s, "SP isn't correct!");
 
     for (addr, val) in &expected.ram {
         assert_eq!(cpu.memory.read(*addr), *val, "ram values don't match at addr {}!", addr);
@@ -84,7 +84,7 @@ pub fn run_one_test(hex: u8) {
     let path = format!("./tests/json/{:02x}.json", hex);
     let scenarios = get_test_scenarios(path);
 
-    println!("Testing instruction {}", hex);
+    println!("Testing instruction {:02x}", hex);
     for (i, scenario) in scenarios.iter().enumerate() {
         println!("Running test {}...", i + 1);
         load_test_scenario(&mut cpu, scenario);
