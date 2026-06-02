@@ -22,7 +22,7 @@ enum Commands {
 
         /// Which cpu test to run
         #[arg(short, long)]
-        instruction: Option<String>
+        instruction: Option<u8>
     },
     /// Runs the debugger given a path to a .nes file
     Run {
@@ -47,7 +47,7 @@ fn main() {
         },
         Some(Commands::Test { test_suite: AvailableTests::Cpu, instruction }) => {
             if let Some(hex) = instruction {
-                suites::cpu::run_one_test(hex);
+                suites::cpu::run_one_test(*hex);
             } else {
                 suites::cpu::run_all_tests();
             }
