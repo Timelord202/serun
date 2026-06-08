@@ -14,6 +14,7 @@ pub enum AddressingMode {
     Indirect_X,
     Indirect_Y,
     Accumulator,
+    Relative,
     NoneAddressing,
 }
 
@@ -108,7 +109,7 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0x31u8 => Instruction { opcode: Opcode::AND, bytes: 2, cycles: 5, addressing_mode: AddressingMode::Indirect_Y },         // (+1 if page crossed)
 
         // ASL
-        0x0Au8 => Instruction { opcode: Opcode::ASL, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },
+        0x0Au8 => Instruction { opcode: Opcode::ASL, bytes: 1, cycles: 2, addressing_mode: AddressingMode::Accumulator },
         0x06u8 => Instruction { opcode: Opcode::ASL, bytes: 2, cycles: 5, addressing_mode: AddressingMode::ZeroPage },
         0x16u8 => Instruction { opcode: Opcode::ASL, bytes: 2, cycles: 6, addressing_mode: AddressingMode::ZeroPage_X },
         0x0Eu8 => Instruction { opcode: Opcode::ASL, bytes: 3, cycles: 6, addressing_mode: AddressingMode::Absolute },

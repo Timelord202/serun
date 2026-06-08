@@ -95,6 +95,11 @@ impl CPU {
                 deref_base.wrapping_add(self.register_y as u16)
             }
 
+            AddressingMode::Relative => {
+                let displacement = self.memory.read(oper_addr) as i8;
+                self.pc.wrapping_add_signed(displacement as i16)
+            }
+
             _ => {
                 panic!("addressing mode {mode:?} is not supported");
             }
