@@ -400,9 +400,9 @@ impl CPU {
     }
 
     pub fn jsr(&mut self, instruction: &Instruction) {
-        let operand_address = self.get_operand_address(&instruction.addressing_mode);
-        self.pc = operand_address.wrapping_sub(1);
-        self.push_stack_u16(operand_address);
+        self.push_stack_u16(self.pc.wrapping_add(2));
+        self.pc = self.get_operand_address(&instruction.addressing_mode);
+        self.pc_modified = true;
     }
 
     // TODO: This and asl should be more generalized
