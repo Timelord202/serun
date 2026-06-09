@@ -27,6 +27,7 @@ pub struct CPU {
     // TODO: This won't work for testing when a Bus is implemented.
     // Will need to fix so that this can be used with a Bus or Ram
     pub memory: Memory,
+    pc_modified: bool,
 }
 
 impl CPU {
@@ -97,7 +98,8 @@ impl CPU {
 
             AddressingMode::Relative => {
                 let displacement = self.memory.read(oper_addr) as i8;
-                self.pc.wrapping_add_signed(displacement as i16)
+                // TODO: Add instr length instead of just 2
+                self.pc.wrapping_add(2).wrapping_add_signed(displacement as i16)
             }
 
             _ => {
@@ -187,23 +189,22 @@ impl CPU {
     pub fn execute_instruction(&mut self) {
         let instruction_hex = self.memory.read(self.pc);
         let retrieved_instr = CPU_OPCODES.get(&instruction_hex);
-        let pc_before_instruction = self.pc;
 
         if let Some(instruction) = retrieved_instr {
             match instruction.opcode {
                 Opcode::ADC => self.adc(instruction),
                 Opcode::AND => self.and(instruction),
                 Opcode::ASL => self.asl(instruction),
-                Opcode::BCC => self.bcc(instruction),
-                Opcode::BCS => self.bcs(instruction),
-                Opcode::BEQ => self.beq(instruction),
+                Opcode::BCC => self.bcc(),
+                Opcode::BCS => self.bcs(),
+                Opcode::BEQ => self.beq(),
                 Opcode::BIT => self.bit(instruction),
-                Opcode::BMI => self.bmi(instruction),
-                Opcode::BNE => self.bne(instruction),
-                Opcode::BPL => self.bpl(instruction),
+                Opcode::BMI => self.bmi(),
+                Opcode::BNE => self.bne(),
+                Opcode::BPL => self.bpl(),
                 Opcode::BRK => self.brk(),
-                Opcode::BVC => self.bvc(instruction),
-                Opcode::BVS => self.bvs(instruction),
+                Opcode::BVC => self.bvc(),
+                Opcode::BVS => self.bvs(),
                 Opcode::CLC => self.clc(),
                 Opcode::CLD => {},
                 Opcode::CLI => self.cli(),
@@ -249,10 +250,10 @@ impl CPU {
                 Opcode::TYA => self.tya(),
             }
 
-            // pc is incremented if it hasn't been set during previous instruction
-            if pc_before_instruction == self.pc {
+            if !self.pc_modified {
                 self.pc = self.pc.wrapping_add(instruction.bytes as u16);
             }
+            self.pc_modified = false;
         }
         else {
             self.pc = self.pc.wrapping_add(1);

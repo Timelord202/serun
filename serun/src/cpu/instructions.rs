@@ -313,24 +313,26 @@ impl CPU {
     }
 
     // Helper function for branch instructions
-    fn branch(&mut self, flag: StatusFlag, require_flag_is_set: bool, instruction: &Instruction) {
-        let flag = self.get_status_flag(flag);
-        if (require_flag_is_set && flag == 1) || (!require_flag_is_set && flag == 0) {
-            let displacement = self.get_operand(instruction) as i16;
-            self.pc = self.pc.wrapping_add_signed(displacement).wrapping_add(2);
+    fn branch(&mut self, flag: StatusFlag, require_flag_is_set: bool) {
+        let flag_is_set = self.get_status_flag(flag) == 1;
+        let target = self.get_operand_address(&AddressingMode::Relative);
+
+        if flag_is_set == require_flag_is_set {
+            self.pc = target;
+            self.pc_modified = true;
         }
     }
 
-    pub fn bcc(&mut self, instruction: &Instruction) {
-        self.branch(StatusFlag::C, false, instruction);
+    pub fn bcc(&mut self) {
+        self.branch(StatusFlag::C, false);
     }
 
-    pub fn bcs(&mut self, instruction: &Instruction) {
-        self.branch(StatusFlag::C, true, instruction);
+    pub fn bcs(&mut self) {
+        self.branch(StatusFlag::C, true);
     }
 
-    pub fn beq(&mut self, instruction: &Instruction) {
-        self.branch(StatusFlag::Z, true, instruction);
+    pub fn beq(&mut self) {
+        self.branch(StatusFlag::Z, true);
     }
 
     pub fn bit(&mut self, instruction: &Instruction) {
@@ -364,16 +366,16 @@ impl CPU {
         }
     }
 
-    pub fn bmi(&mut self, instruction: &Instruction) {
-        self.branch(StatusFlag::N, true, instruction);
+    pub fn bmi(&mut self) {
+        self.branch(StatusFlag::N, true);
     }
 
-    pub fn bne(&mut self, instruction: &Instruction) {
-        self.branch(StatusFlag::Z, false, instruction);
+    pub fn bne(&mut self) {
+        self.branch(StatusFlag::Z, false);
     }
 
-    pub fn bpl(&mut self, instruction: &Instruction) {
-        self.branch(StatusFlag::N, false, instruction);
+    pub fn bpl(&mut self) {
+        self.branch(StatusFlag::N, false);
     }
 
     pub fn brk(&mut self) {
@@ -381,14 +383,15 @@ impl CPU {
         self.push_stack(self.status | 0b0011_0000);
         self.set_status_flag(StatusFlag::I);
         self.pc = self.memory.read_u16(0xFFFE);
+        self.pc_modified = true;
     }
 
-    pub fn bvc(&mut self, instruction: &Instruction) {
-        self.branch(StatusFlag::V, false, instruction);
+    pub fn bvc(&mut self) {
+        self.branch(StatusFlag::V, false);
     }
 
-    pub fn bvs(&mut self, instruction: &Instruction) {
-        self.branch(StatusFlag::V, true, instruction);
+    pub fn bvs(&mut self) {
+        self.branch(StatusFlag::V, true);
     }
 
     // TODO: Need to account for 6502 bug
