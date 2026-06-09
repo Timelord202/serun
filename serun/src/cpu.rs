@@ -89,7 +89,7 @@ impl CPU {
             }
 
             AddressingMode::Indirect_Y => {
-                let base = self.memory.read(self.pc);
+                let base = self.memory.read(oper_addr);
                 let lo = self.memory.read(base as u16);
                 let hi = self.memory.read(base.wrapping_add(1) as u16);
                 let deref_base = (hi as u16) << 8 | (lo as u16);
