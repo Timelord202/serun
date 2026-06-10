@@ -135,10 +135,10 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0xD0u8 => Instruction { opcode: Opcode::BNE, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
 
         // BPL
-        0x10u8 => Instruction { opcode: Opcode::BPL, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
+        0x10u8 => Instruction { opcode: Opcode::BPL, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },          // (+1 if branch succeeds, +2 if to a new page)
 
         // BRK
-        0x00u8 => Instruction { opcode: Opcode::BRK, bytes: 1, cycles: 7, addressing_mode: AddressingMode::NoneAddressing },
+        0x00u8 => Instruction { opcode: Opcode::BRK, bytes: 2, cycles: 7, addressing_mode: AddressingMode::NoneAddressing },
 
         // BVC
         0x50u8 => Instruction { opcode: Opcode::BVC, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)

@@ -17,7 +17,7 @@ pub enum StatusFlag {
 }
 
 #[derive(Default)]
-pub struct CPU {
+pub struct CPU<'a> {
     pub register_a: u8,
     pub register_x: u8,
     pub register_y: u8,
@@ -27,10 +27,10 @@ pub struct CPU {
     // TODO: This won't work for testing when a Bus is implemented.
     // Will need to fix so that this can be used with a Bus or Ram
     pub memory: Memory,
-    pc_modified: bool,
+    curr_instr: Option<&'a Instruction>,
 }
 
-impl CPU {
+impl CPU<'_> {
     pub fn reset(&mut self) {
         self.register_a = 0;
         self.register_x = 0;
@@ -44,9 +44,11 @@ impl CPU {
         self.reset();
     }
 
-    fn get_operand_address(&mut self, mode: &AddressingMode) -> u16 {
+    fn get_operand_address(&mut self) -> u16 {
+        let instruction = self.curr_instr.unwrap();
+        let mode = &instruction.addressing_mode;
         // PC points to the opcode, need to increment in order to get operand
-        let oper_addr = self.pc.wrapping_add(1);
+        let oper_addr = self.pc.wrapping_sub(self.curr_instr.unwrap().bytes as u16 - 1);
 
         match mode {
             AddressingMode::Immediate => oper_addr,
@@ -99,7 +101,7 @@ impl CPU {
             AddressingMode::Relative => {
                 let displacement = self.memory.read(oper_addr) as i8;
                 // TODO: Add instr length instead of just 2
-                self.pc.wrapping_add(2).wrapping_add_signed(displacement as i16)
+                self.pc.wrapping_add_signed(displacement as i16)
             }
 
             _ => {
@@ -122,8 +124,8 @@ impl CPU {
         }
     }
 
-    fn get_operand(&mut self, instruction: &Instruction) -> u8 {
-        let operand_address = self.get_operand_address(&instruction.addressing_mode);
+    fn get_operand(&mut self) -> u8 {
+        let operand_address = self.get_operand_address();
         self.memory.read(operand_address)
     }
 
@@ -188,16 +190,19 @@ impl CPU {
 
     pub fn execute_instruction(&mut self) {
         let instruction_hex = self.memory.read(self.pc);
-        let instruction = CPU_OPCODES.get(&instruction_hex).unwrap_or_else(|| panic!("Failed to retrieve instruction: {:x}", instruction_hex));
+        let instruction = CPU_OPCODES.get(&instruction_hex);
+        self.curr_instr = instruction;
+        let instruction = instruction.unwrap_or_else(|| panic!("Failed to retrieve instruction: {:x}", instruction_hex));
+        self.pc = self.pc.wrapping_add(instruction.bytes as u16);
 
         match &instruction.opcode {
-            Opcode::ADC => self.adc(instruction),
-            Opcode::AND => self.and(instruction),
-            Opcode::ASL => self.asl(instruction),
+            Opcode::ADC => self.adc(),
+            Opcode::AND => self.and(),
+            Opcode::ASL => self.asl(),
             Opcode::BCC => self.bcc(),
             Opcode::BCS => self.bcs(),
             Opcode::BEQ => self.beq(),
-            Opcode::BIT => self.bit(instruction),
+            Opcode::BIT => self.bit(),
             Opcode::BMI => self.bmi(),
             Opcode::BNE => self.bne(),
             Opcode::BPL => self.bpl(),
@@ -208,39 +213,39 @@ impl CPU {
             Opcode::CLD => {},
             Opcode::CLI => self.cli(),
             Opcode::CLV => self.clv(),
-            Opcode::CMP => self.cmp(instruction),
-            Opcode::CPX => self.cpx(instruction),
-            Opcode::CPY => self.cpy(instruction),
-            Opcode::DEC => self.dec(instruction),
+            Opcode::CMP => self.cmp(),
+            Opcode::CPX => self.cpx(),
+            Opcode::CPY => self.cpy(),
+            Opcode::DEC => self.dec(),
             Opcode::DEX => self.dex(),
             Opcode::DEY => self.dey(),
-            Opcode::EOR => self.eor(instruction),
-            Opcode::INC => self.inc(instruction),
+            Opcode::EOR => self.eor(),
+            Opcode::INC => self.inc(),
             Opcode::INX => self.inx(),
             Opcode::INY => self.iny(),
-            Opcode::JMP => self.jmp(instruction),
-            Opcode::JSR => self.jsr(instruction),
-            Opcode::LDA => self.lda(instruction),
-            Opcode::LDX => self.ldx(instruction),
-            Opcode::LDY => self.ldy(instruction),
-            Opcode::LSR => self.lsr(instruction),
+            Opcode::JMP => self.jmp(),
+            Opcode::JSR => self.jsr(),
+            Opcode::LDA => self.lda(),
+            Opcode::LDX => self.ldx(),
+            Opcode::LDY => self.ldy(),
+            Opcode::LSR => self.lsr(),
             Opcode::NOP => {},
-            Opcode::ORA => self.ora(instruction),
+            Opcode::ORA => self.ora(),
             Opcode::PHA => self.pha(),
             Opcode::PHP => self.php(),
             Opcode::PLA => self.pla(),
             Opcode::PLP => self.plp(),
-            Opcode::ROL => self.rol(instruction),
-            Opcode::ROR => self.ror(instruction),
+            Opcode::ROL => self.rol(),
+            Opcode::ROR => self.ror(),
             Opcode::RTI => self.rti(),
             Opcode::RTS => self.rts(),
-            Opcode::SBC => self.sbc(instruction),
+            Opcode::SBC => self.sbc(),
             Opcode::SEC => self.sec(),
             Opcode::SED => self.sed(),
             Opcode::SEI => self.sei(),
-            Opcode::STA => self.sta(instruction),
-            Opcode::STX => self.stx(instruction),
-            Opcode::STY => self.sty(instruction),
+            Opcode::STA => self.sta(),
+            Opcode::STX => self.stx(),
+            Opcode::STY => self.sty(),
             Opcode::TAX => self.tax(),
             Opcode::TAY => self.tay(),
             Opcode::TSX => self.tsx(),
@@ -248,10 +253,5 @@ impl CPU {
             Opcode::TXS => self.txs(),
             Opcode::TYA => self.tya(),
         }
-
-        if !self.pc_modified {
-            self.pc = self.pc.wrapping_add(instruction.bytes as u16);
-        }
-        self.pc_modified = false;
     }
 }

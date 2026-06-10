@@ -1,7 +1,7 @@
 use crate::cpu::{CPU, StatusFlag};
 use crate::opcodes::{AddressingMode, Instruction};
 
-impl CPU {
+impl CPU<'_> {
     fn modify_accumulator(&mut self, new_accumulator_value: u16, operand: u8) {
         if new_accumulator_value > 0xFF {
             self.set_status_flag(StatusFlag::C);
@@ -21,24 +21,26 @@ impl CPU {
     }
 
     // TODO: Create wrapping add for new accumulator values
-    pub fn adc (&mut self, instruction: &Instruction) {
-        let operand = self.get_operand(instruction);
+    pub fn adc (&mut self) {
+        let operand = self.get_operand();
         let new_accumulator_value = self.register_a as u16 + operand as u16 + self.get_status_flag(StatusFlag::C) as u16;
         self.modify_accumulator(new_accumulator_value, operand);
     }
 
-    pub fn sbc (&mut self, instruction: &Instruction) {
-        let operand = self.get_operand(instruction);
+    pub fn sbc (&mut self) {
+        let operand = self.get_operand();
         let new_accumulator_value = self.register_a as u16 - operand as u16 - (1 - self.get_status_flag(StatusFlag::C) as u16);
         self.modify_accumulator(new_accumulator_value, operand);
     }
 
-    pub fn and(&mut self, instruction: &Instruction) {
-        self.register_a &= self.get_operand(instruction);
+    pub fn and(&mut self) {
+        self.register_a &= self.get_operand();
         self.update_zero_and_negative_flags(self.register_a);
     }
 
-    pub fn asl(&mut self, instruction: &Instruction) {
+    pub fn asl(&mut self) {
+        let instruction = self.curr_instr.unwrap();
+
         match &instruction.addressing_mode {
             AddressingMode::Accumulator => {
                 let old_bit_seven = (self.register_a & 0b1000_0000) >> 7;
@@ -48,8 +50,8 @@ impl CPU {
                 self.update_zero_and_negative_flags(self.register_a);
             },
             AddressingMode::ZeroPage | AddressingMode::ZeroPage_X | AddressingMode::Absolute | AddressingMode::Absolute_X => {
-                let operand_address = self.get_operand_address(&instruction.addressing_mode);
-                let mut operand = self.get_operand(instruction);
+                let operand_address = self.get_operand_address();
+                let mut operand = self.get_operand();
                 let old_bit_seven = (operand & 0b1000_0000) >> 7;
                 operand <<= 1;
                 self.clear_status_flag(StatusFlag::C);
@@ -97,23 +99,23 @@ impl CPU {
         }
     }
 
-    pub fn cmp(&mut self, instruction: &Instruction) {
-        let value = self.get_operand(instruction);
+    pub fn cmp(&mut self) {
+        let value = self.get_operand();
         self.compare_register(self.register_a, value);
     }
 
-    pub fn cpx(&mut self, instruction: &Instruction) {
-        let value = self.get_operand(instruction);
+    pub fn cpx(&mut self) {
+        let value = self.get_operand();
         self.compare_register(self.register_x, value);
     }
 
-    pub fn cpy(&mut self, instruction: &Instruction) {
-        let value = self.get_operand(instruction);
+    pub fn cpy(&mut self) {
+        let value = self.get_operand();
         self.compare_register(self.register_y, value);
     }
 
-    pub fn dec(&mut self, instruction: &Instruction) {
-        let address = self.get_operand_address(&instruction.addressing_mode);
+    pub fn dec(&mut self) {
+        let address = self.get_operand_address();
         let mem_value = self.memory.read(address);
         let result = mem_value.wrapping_sub(1);
         self.memory.write(address, result);
@@ -130,13 +132,13 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_y);
     }
 
-    pub fn eor(&mut self, instruction: &Instruction) {
-        self.register_a ^= self.get_operand(instruction);
+    pub fn eor(&mut self) {
+        self.register_a ^= self.get_operand();
         self.update_zero_and_negative_flags(self.register_a);
     }
 
-    pub fn inc(&mut self, instruction: &Instruction) {
-        let address = self.get_operand_address(&instruction.addressing_mode);
+    pub fn inc(&mut self) {
+        let address = self.get_operand_address();
         let mem_value = self.memory.read(address);
         let result = mem_value.wrapping_add(1);
         self.memory.write(address, result);
@@ -153,23 +155,23 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_y);
     }
 
-    pub fn lda(&mut self, instruction: &Instruction) {
-        self.register_a = self.get_operand(instruction);
+    pub fn lda(&mut self) {
+        self.register_a = self.get_operand();
         self.update_zero_and_negative_flags(self.register_a);
     }
 
-    pub fn ldx(&mut self, instruction: &Instruction) {
-        self.register_x = self.get_operand(instruction);
+    pub fn ldx(&mut self) {
+        self.register_x = self.get_operand();
         self.update_zero_and_negative_flags(self.register_x);
     }
 
-    pub fn ldy(&mut self, instruction: &Instruction) {
-        self.register_y = self.get_operand(instruction);
+    pub fn ldy(&mut self) {
+        self.register_y = self.get_operand();
         self.update_zero_and_negative_flags(self.register_y);
     }
 
-    pub fn ora(&mut self, instruction: &Instruction) {
-        self.register_a |= self.get_operand(instruction);
+    pub fn ora(&mut self) {
+        self.register_a |= self.get_operand();
         self.update_zero_and_negative_flags(self.register_a);
     }
 
@@ -212,18 +214,18 @@ impl CPU {
         self.set_status_flag(StatusFlag::I);
     }
 
-    pub fn sta(&mut self, instruction: &Instruction) {
-        let address = self.get_operand_address(&instruction.addressing_mode);
+    pub fn sta(&mut self) {
+        let address = self.get_operand_address();
         self.memory.write(address, self.register_a);
     }
 
-    pub fn stx(&mut self, instruction: &Instruction) {
-        let address = self.get_operand_address(&instruction.addressing_mode);
+    pub fn stx(&mut self) {
+        let address = self.get_operand_address();
         self.memory.write(address, self.register_x);
     }
 
-    pub fn sty(&mut self, instruction: &Instruction) {
-        let address = self.get_operand_address(&instruction.addressing_mode);
+    pub fn sty(&mut self) {
+        let address = self.get_operand_address();
         self.memory.write(address, self.register_y);
     }
 
@@ -265,15 +267,17 @@ impl CPU {
         operand
     }
 
-    pub fn rol(&mut self, instruction: &Instruction) {
+    pub fn rol(&mut self) {
+        let instruction = self.curr_instr.unwrap();
+
         match &instruction.addressing_mode {
             AddressingMode::Accumulator => {
                 self.register_a = self.rotate_left(self.register_a);
                 self.update_zero_and_negative_flags(self.register_a);
             },
             AddressingMode::ZeroPage | AddressingMode::ZeroPage_X | AddressingMode::Absolute | AddressingMode::Absolute_X => {
-                let operand_address = self.get_operand_address(&instruction.addressing_mode);
-                let operand = self.get_operand(instruction);
+                let operand_address = self.get_operand_address();
+                let operand = self.get_operand();
                 let rotated_operand = self.rotate_left(operand);
                 self.memory.write(operand_address, rotated_operand);
                 self.update_zero_and_negative_flags(rotated_operand);
@@ -293,15 +297,17 @@ impl CPU {
         operand
     }
 
-    pub fn ror(&mut self, instruction: &Instruction) {
+    pub fn ror(&mut self) {
+        let instruction = self.curr_instr.unwrap();
+
         match &instruction.addressing_mode {
             AddressingMode::Accumulator => {
                 self.register_a = self.rotate_right(self.register_a);
                 self.update_zero_and_negative_flags(self.register_a);
             },
             AddressingMode::ZeroPage | AddressingMode::ZeroPage_X | AddressingMode::Absolute | AddressingMode::Absolute_X => {
-                let operand_address = self.get_operand_address(&instruction.addressing_mode);
-                let operand = self.get_operand(instruction);
+                let operand_address = self.get_operand_address();
+                let operand = self.get_operand();
                 let rotated_operand = self.rotate_right(operand);
                 self.memory.write(operand_address, rotated_operand);
                 self.update_zero_and_negative_flags(rotated_operand);
@@ -315,11 +321,10 @@ impl CPU {
     // Helper function for branch instructions
     fn branch(&mut self, flag: StatusFlag, require_flag_is_set: bool) {
         let flag_is_set = self.get_status_flag(flag) == 1;
-        let target = self.get_operand_address(&AddressingMode::Relative);
+        let target = self.get_operand_address();
 
         if flag_is_set == require_flag_is_set {
             self.pc = target;
-            self.pc_modified = true;
         }
     }
 
@@ -335,8 +340,8 @@ impl CPU {
         self.branch(StatusFlag::Z, true);
     }
 
-    pub fn bit(&mut self, instruction: &Instruction) {
-        let operand = self.get_operand(instruction);
+    pub fn bit(&mut self) {
+        let operand = self.get_operand();
         let bit_seven = (operand & 0b1000_0000) >> 7;
         let bit_six = (operand & 0b0100_0000) >> 6;
         let result = self.register_a & operand;
@@ -379,11 +384,10 @@ impl CPU {
     }
 
     pub fn brk(&mut self) {
-        self.push_stack_u16(self.pc.wrapping_add(2));
+        self.push_stack_u16(self.pc);
         self.push_stack(self.status | 0b0011_0000);
         self.set_status_flag(StatusFlag::I);
         self.pc = self.memory.read_u16(0xFFFE);
-        self.pc_modified = true;
     }
 
     pub fn bvc(&mut self) {
@@ -395,18 +399,19 @@ impl CPU {
     }
 
     // TODO: Need to account for 6502 bug
-    pub fn jmp(&mut self, instruction: &Instruction) {
-        self.pc = self.get_operand_address(&instruction.addressing_mode);
+    pub fn jmp(&mut self) {
+        self.pc = self.get_operand_address();
     }
 
-    pub fn jsr(&mut self, instruction: &Instruction) {
-        self.push_stack_u16(self.pc.wrapping_add(2));
-        self.pc = self.get_operand_address(&instruction.addressing_mode);
-        self.pc_modified = true;
+    pub fn jsr(&mut self) {
+        self.push_stack_u16(self.pc.wrapping_sub(1));
+        self.pc = self.get_operand_address();
     }
 
     // TODO: This and asl should be more generalized
-    pub fn lsr(&mut self, instruction: &Instruction) {
+    pub fn lsr(&mut self) {
+        let instruction = self.curr_instr.unwrap();
+
         match &instruction.addressing_mode {
             AddressingMode::Accumulator => {
                 let old_bit_zero = self.register_a & 1;
@@ -416,8 +421,8 @@ impl CPU {
                 self.update_zero_and_negative_flags(self.register_a);
             },
             AddressingMode::ZeroPage | AddressingMode::ZeroPage_X | AddressingMode::Absolute | AddressingMode::Absolute_X => {
-                let operand_address = self.get_operand_address(&instruction.addressing_mode);
-                let mut operand = self.get_operand(instruction);
+                let operand_address = self.get_operand_address();
+                let mut operand = self.get_operand();
                 let old_bit_zero = operand & 1;
                 operand >>= 1;
                 self.clear_status_flag(StatusFlag::C);
