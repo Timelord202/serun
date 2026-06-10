@@ -402,7 +402,6 @@ impl CPU<'_> {
         self.branch(StatusFlag::V, true);
     }
 
-    // TODO: Need to account for 6502 bug
     pub fn jmp(&mut self) {
         self.pc = self.get_operand_address();
     }
