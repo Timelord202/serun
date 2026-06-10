@@ -129,10 +129,10 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0x2Cu8 => Instruction { opcode: Opcode::BIT, bytes: 3, cycles: 4, addressing_mode: AddressingMode::Absolute },
 
         // BMI
-        0x30u8 => Instruction { opcode: Opcode::BMI, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
+        0x30u8 => Instruction { opcode: Opcode::BMI, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },          // (+1 if branch succeeds, +2 if to a new page)
 
         // BNE
-        0xD0u8 => Instruction { opcode: Opcode::BNE, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
+        0xD0u8 => Instruction { opcode: Opcode::BNE, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },          // (+1 if branch succeeds, +2 if to a new page)
 
         // BPL
         0x10u8 => Instruction { opcode: Opcode::BPL, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },          // (+1 if branch succeeds, +2 if to a new page)
@@ -141,10 +141,10 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0x00u8 => Instruction { opcode: Opcode::BRK, bytes: 2, cycles: 7, addressing_mode: AddressingMode::NoneAddressing },
 
         // BVC
-        0x50u8 => Instruction { opcode: Opcode::BVC, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
+        0x50u8 => Instruction { opcode: Opcode::BVC, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },          // (+1 if branch succeeds, +2 if to a new page)
 
         // BVS
-        0x70u8 => Instruction { opcode: Opcode::BVS, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
+        0x70u8 => Instruction { opcode: Opcode::BVS, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },          // (+1 if branch succeeds, +2 if to a new page)
 
         // CLC
         0x18u8 => Instruction { opcode: Opcode::CLC, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },
@@ -244,7 +244,7 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0xBCu8 => Instruction { opcode: Opcode::LDY, bytes: 3, cycles: 4, addressing_mode: AddressingMode::Absolute_Y },          // (+1 if page crossed)
 
         // LSR
-        0x4Au8 => Instruction { opcode: Opcode::LSR, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },
+        0x4Au8 => Instruction { opcode: Opcode::LSR, bytes: 1, cycles: 2, addressing_mode: AddressingMode::Accumulator },
         0x46u8 => Instruction { opcode: Opcode::LSR, bytes: 2, cycles: 5, addressing_mode: AddressingMode::ZeroPage },
         0x56u8 => Instruction { opcode: Opcode::LSR, bytes: 2, cycles: 6, addressing_mode: AddressingMode::ZeroPage_X },
         0x4Eu8 => Instruction { opcode: Opcode::LSR, bytes: 3, cycles: 6, addressing_mode: AddressingMode::Absolute },
@@ -283,7 +283,7 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0x3Eu8 => Instruction { opcode: Opcode::ROL, bytes: 3, cycles: 7, addressing_mode: AddressingMode::Absolute_X },
 
         // ROR
-        0x6Au8 => Instruction { opcode: Opcode::ROR, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },
+        0x6Au8 => Instruction { opcode: Opcode::ROR, bytes: 1, cycles: 2, addressing_mode: AddressingMode::Accumulator },
         0x66u8 => Instruction { opcode: Opcode::ROR, bytes: 2, cycles: 5, addressing_mode: AddressingMode::ZeroPage },
         0x76u8 => Instruction { opcode: Opcode::ROR, bytes: 2, cycles: 6, addressing_mode: AddressingMode::ZeroPage_X },
         0x6Eu8 => Instruction { opcode: Opcode::ROR, bytes: 3, cycles: 6, addressing_mode: AddressingMode::Absolute },

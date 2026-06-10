@@ -1,5 +1,5 @@
 use crate::cpu::{CPU, StatusFlag};
-use crate::opcodes::{AddressingMode, Instruction};
+use crate::opcodes::AddressingMode;
 
 impl CPU<'_> {
     fn modify_accumulator(&mut self, new_accumulator_value: u16, operand: u8) {
@@ -190,10 +190,14 @@ impl CPU<'_> {
 
     pub fn plp(&mut self) {
         self.status = self.pop_stack();
+        self.clear_status_flag(StatusFlag::B);
+        self.set_status_flag(StatusFlag::Unused);
     }
 
     pub fn rti(&mut self) {
         self.status = self.pop_stack();
+        self.clear_status_flag(StatusFlag::B);
+        self.set_status_flag(StatusFlag::Unused);
         self.pc = self.pop_stack_u16();
     }
 

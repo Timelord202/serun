@@ -13,7 +13,8 @@ pub enum StatusFlag {
     D,
     B,
     V,
-    N
+    N,
+    Unused,
 }
 
 #[derive(Default)]
@@ -159,6 +160,7 @@ impl CPU<'_> {
             StatusFlag::I => (self.status & 0b0000_0100) >> 2,
             StatusFlag::D => (self.status & 0b0000_1000) >> 3,
             StatusFlag::B => (self.status & 0b0001_0000) >> 4,
+            StatusFlag::Unused => (self.status & 0b0010_0000) >> 5,
             StatusFlag::V => (self.status & 0b0100_0000) >> 6,
             StatusFlag::N => (self.status & 0b1000_0000) >> 7,
         }
@@ -171,6 +173,7 @@ impl CPU<'_> {
             StatusFlag::I => self.status |= 0b0000_0100,
             StatusFlag::D => self.status |= 0b0000_1000,
             StatusFlag::B => self.status |= 0b0001_0000,
+            StatusFlag::Unused => self.status |= 0b0010_0000,
             StatusFlag::V => self.status |= 0b0100_0000,
             StatusFlag::N => self.status |= 0b1000_0000,
         };
@@ -183,6 +186,7 @@ impl CPU<'_> {
             StatusFlag::I => self.status &= 0b1111_1011,
             StatusFlag::D => self.status &= 0b1111_0111,
             StatusFlag::B => self.status &= 0b1110_1111,
+            StatusFlag::Unused => self.status &= 0b1101_1111,
             StatusFlag::V => self.status &= 0b1011_1111,
             StatusFlag::N => self.status &= 0b0111_1111,
         };
