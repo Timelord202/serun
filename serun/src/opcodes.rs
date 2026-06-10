@@ -116,13 +116,13 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0x1Eu8 => Instruction { opcode: Opcode::ASL, bytes: 3, cycles: 7, addressing_mode: AddressingMode::Absolute_X },
 
         // BCC
-        0x90u8 => Instruction { opcode: Opcode::BCC, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
+        0x90u8 => Instruction { opcode: Opcode::BCC, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },          // (+1 if branch succeeds, +2 if to a new page)
 
         // BCS
-        0xB0u8 => Instruction { opcode: Opcode::BCS, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
+        0xB0u8 => Instruction { opcode: Opcode::BCS, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },          // (+1 if branch succeeds, +2 if to a new page)
 
         // BEQ
-        0xF0u8 => Instruction { opcode: Opcode::BEQ, bytes: 2, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },     // (+1 if branch succeeds, +2 if to a new page)
+        0xF0u8 => Instruction { opcode: Opcode::BEQ, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Relative },           // (+1 if branch succeeds, +2 if to a new page)
 
         // BIT
         0x24u8 => Instruction { opcode: Opcode::BIT, bytes: 2, cycles: 3, addressing_mode: AddressingMode::ZeroPage },

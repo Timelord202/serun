@@ -26,6 +26,12 @@ impl Memory {
         (hi << 8) | lo
     }
 
+    pub fn read_u16_jmp_bug(&mut self, pos: u16) -> u16 {
+        let lo = self.read(pos) as u16;
+        let hi = self.read(pos & 0xFF00) as u16;
+        (hi << 8) | lo
+    }
+
     pub fn write_u16(&mut self, pos: u16, data: u16) {
         let hi = (data >> 8) as u8;
         let lo = (data & 0xFF) as u8;

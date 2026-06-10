@@ -48,8 +48,9 @@ impl CPU<'_> {
     fn get_operand_address(&mut self) -> u16 {
         let instruction = self.curr_instr.unwrap();
         let mode = &instruction.addressing_mode;
-        // PC points to the opcode, need to increment in order to get operand
-        let oper_addr = self.pc.wrapping_sub(self.curr_instr.unwrap().bytes as u16 - 1);
+        // PC points to opcode after current instruction, need to subtract length of
+        // current instruction and add 1 to get the correct address
+        let oper_addr = self.pc.wrapping_sub(instruction.bytes as u16 - 1);
 
         match mode {
             AddressingMode::Immediate => oper_addr,
@@ -80,6 +81,10 @@ impl CPU<'_> {
 
             AddressingMode::Indirect => {
                 let operand_address = self.memory.read_u16(oper_addr);
+
+                if operand_address & 0xFF == 0xFF {
+                    return self.memory.read_u16_jmp_bug(operand_address);
+                }
                 self.memory.read_u16(operand_address)
             }
 
