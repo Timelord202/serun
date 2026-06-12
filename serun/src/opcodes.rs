@@ -239,9 +239,9 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         // LDY
         0xA0u8 => Instruction { opcode: Opcode::LDY, bytes: 2, cycles: 2, addressing_mode: AddressingMode::Immediate },
         0xA4u8 => Instruction { opcode: Opcode::LDY, bytes: 2, cycles: 3, addressing_mode: AddressingMode::ZeroPage },
-        0xB4u8 => Instruction { opcode: Opcode::LDY, bytes: 2, cycles: 4, addressing_mode: AddressingMode::ZeroPage_Y },
+        0xB4u8 => Instruction { opcode: Opcode::LDY, bytes: 2, cycles: 4, addressing_mode: AddressingMode::ZeroPage_X },
         0xACu8 => Instruction { opcode: Opcode::LDY, bytes: 3, cycles: 4, addressing_mode: AddressingMode::Absolute },
-        0xBCu8 => Instruction { opcode: Opcode::LDY, bytes: 3, cycles: 4, addressing_mode: AddressingMode::Absolute_Y },          // (+1 if page crossed)
+        0xBCu8 => Instruction { opcode: Opcode::LDY, bytes: 3, cycles: 4, addressing_mode: AddressingMode::Absolute_X },          // (+1 if page crossed)
 
         // LSR
         0x4Au8 => Instruction { opcode: Opcode::LSR, bytes: 1, cycles: 2, addressing_mode: AddressingMode::Accumulator },
@@ -330,7 +330,7 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
 
         // STY
         0x84u8 => Instruction { opcode: Opcode::STY, bytes: 2, cycles: 3, addressing_mode: AddressingMode::ZeroPage },
-        0x94u8 => Instruction { opcode: Opcode::STY, bytes: 2, cycles: 4, addressing_mode: AddressingMode::ZeroPage_Y },
+        0x94u8 => Instruction { opcode: Opcode::STY, bytes: 2, cycles: 4, addressing_mode: AddressingMode::ZeroPage_X },
         0x8Cu8 => Instruction { opcode: Opcode::STY, bytes: 3, cycles: 4, addressing_mode: AddressingMode::Absolute },
 
         // TAX
@@ -346,7 +346,7 @@ pub static CPU_OPCODES: phf::Map<u8, Instruction> = phf_map! {
         0x8Au8 => Instruction { opcode: Opcode::TXA, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },
 
         // TXS
-        0x9Au8 => Instruction { opcode: Opcode::TSX, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },
+        0x9Au8 => Instruction { opcode: Opcode::TXS, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },
 
         // TYA
         0x98u8 => Instruction { opcode: Opcode::TYA, bytes: 1, cycles: 2, addressing_mode: AddressingMode::NoneAddressing },

@@ -1,36 +1,42 @@
 use crate::cpu::{CPU, StatusFlag};
 use crate::opcodes::AddressingMode;
 
+// See https://www.nesdev.org/wiki/Instruction_reference for explanation of instructions
 impl CPU<'_> {
-    fn modify_accumulator(&mut self, new_accumulator_value: u16, operand: u8) {
-        if new_accumulator_value > 0xFF {
+    // Helper function for adc and sbc
+    fn update_czvn_flags(&mut self, result: u16, operand: u16, acc: u16) {
+        if result > 0xFF {
             self.set_status_flag(StatusFlag::C);
         }
         else {
             self.clear_status_flag(StatusFlag::C);
         }
-        if (self.register_a ^ new_accumulator_value as u8) & (operand ^ new_accumulator_value as u8) & 0x80 != 0 {
+
+        if ((result ^ acc) & (result ^ operand) & 0x80) != 0 {
             self.set_status_flag(StatusFlag::V);
         }
         else {
             self.clear_status_flag(StatusFlag::V);
         }
 
-        self.register_a = new_accumulator_value as u8;
+        self.register_a = result as u8;
         self.update_zero_and_negative_flags(self.register_a);
     }
 
-    // TODO: Create wrapping add for new accumulator values
     pub fn adc (&mut self) {
-        let operand = self.get_operand();
-        let new_accumulator_value = self.register_a as u16 + operand as u16 + self.get_status_flag(StatusFlag::C) as u16;
-        self.modify_accumulator(new_accumulator_value, operand);
+        let acc = self.register_a as u16;
+        let operand = self.get_operand() as u16;
+        let carry_bit = self.get_status_flag(StatusFlag::C) as u16;
+        let result = acc.wrapping_add(operand).wrapping_add(carry_bit);
+        self.update_czvn_flags(result, operand, acc);
     }
 
     pub fn sbc (&mut self) {
-        let operand = self.get_operand();
-        let new_accumulator_value = self.register_a as u16 - operand as u16 - (1 - self.get_status_flag(StatusFlag::C) as u16);
-        self.modify_accumulator(new_accumulator_value, operand);
+        let acc = self.register_a as u16;
+        let not_operand = !self.get_operand() as u16;
+        let carry_bit = self.get_status_flag(StatusFlag::C) as u16;
+        let result = acc.wrapping_add(not_operand).wrapping_add(carry_bit);
+        self.update_czvn_flags(result, not_operand, acc);
     }
 
     pub fn and(&mut self) {
@@ -65,6 +71,10 @@ impl CPU<'_> {
 
     pub fn clc(&mut self) {
         self.clear_status_flag(StatusFlag::C);
+    }
+
+    pub fn cld(&mut self) {
+        self.clear_status_flag(StatusFlag::D);
     }
 
     pub fn cli(&mut self) {

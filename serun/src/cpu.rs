@@ -219,7 +219,7 @@ impl CPU<'_> {
             Opcode::BVC => self.bvc(),
             Opcode::BVS => self.bvs(),
             Opcode::CLC => self.clc(),
-            Opcode::CLD => {},
+            Opcode::CLD => self.cld(),
             Opcode::CLI => self.cli(),
             Opcode::CLV => self.clv(),
             Opcode::CMP => self.cmp(),
