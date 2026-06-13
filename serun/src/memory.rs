@@ -1,4 +1,9 @@
 // Implemented for both Ram and Bus
+const RAM_MIRROR_START: u16 = 0x0000;
+const RAM_MIRROR_END: u16 = 0x2000;
+const PPU_MIRROR_START: u16 = 0x2000;
+const PPU_MIRROR_END: u16 = 0x4000;
+
 pub trait Memory {
     fn read(&self, addr: u16) -> u8;
     fn write(&mut self, addr: u16, data: u8);
@@ -61,12 +66,34 @@ pub struct Bus {
 }
 
 impl Memory for Bus {
-    fn read(&self, addr: u16) -> u8 { 
-        self.ram.read(addr)
+    fn read(&self, addr: u16) -> u8 {
+        match addr {
+            RAM_MIRROR_START..RAM_MIRROR_END => {
+                self.ram.read(addr & 0b00000111_11111111 as u16)
+            },
+            PPU_MIRROR_START..PPU_MIRROR_END => {
+                self.ram.read(addr & 0b00100000_00000111 as u16)
+            },
+            _ => {
+                self.ram.read(addr)
+            }
+        }
     }
+
     fn write(&mut self, addr: u16, data: u8) {
-        self.ram.write(addr, data)
+        match addr {
+            RAM_MIRROR_START..RAM_MIRROR_END => {
+                self.ram.write(addr & 0b00000111_11111111 as u16, data);
+            },
+            PPU_MIRROR_START..PPU_MIRROR_END => {
+                self.ram.write(addr & 0b00100000_00000111 as u16, data);
+            }
+            _ => {
+                self.ram.write(addr, data);
+            }
+        }
     }
+
     fn load(&mut self, program: Vec<u8>) {
         self.ram.load(program);
     }
