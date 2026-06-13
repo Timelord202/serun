@@ -18,20 +18,19 @@ pub enum StatusFlag {
 }
 
 #[derive(Default)]
-pub struct CPU<'a> {
+pub struct CPU<'a, Mem: Memory> {
     pub register_a: u8,
     pub register_x: u8,
     pub register_y: u8,
     pub sp: u8,
     pub pc: u16,
     pub status: u8,
-    // TODO: This won't work for testing when a Bus is implemented.
-    // Will need to fix so that this can be used with a Bus or Ram
-    pub memory: Memory,
+    // Memory can either be Ram (for debugging) or Bus
+    pub memory: Mem,
     curr_instr: Option<&'a Instruction>,
 }
 
-impl CPU<'_> {
+impl<Mem: Memory> CPU<'_, Mem> {
     pub fn reset(&mut self) {
         self.register_a = 0;
         self.register_x = 0;

@@ -1,8 +1,9 @@
 use crate::cpu::{CPU, StatusFlag};
+use crate::memory::Memory;
 use crate::opcodes::AddressingMode;
 
 // See https://www.nesdev.org/wiki/Instruction_reference for explanation of instructions
-impl CPU<'_> {
+impl<Mem: Memory> CPU<'_, Mem> {
     // Helper function for adc and sbc
     fn update_czvn_flags(&mut self, result: u16, operand: u16, acc: u16) {
         if result > 0xFF {

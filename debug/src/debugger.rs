@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use serun::cpu;
 use serun::cartridge;
+use serun::memory::Bus;
 use eframe::egui;
 use egui::{RichText, Color32};
 use std::sync::mpsc::Receiver;
@@ -16,7 +17,7 @@ pub fn run_debugger(path: PathBuf) -> eframe::Result {
     let (tx, rx) = mpsc::channel();
 
     thread::spawn(move || {
-        let mut cpu = cpu::CPU::default();
+        let mut cpu = cpu::CPU::<Bus>::default();
         let cart = cartridge::Cartidge::from_path(path).unwrap();
         cpu.load_program(cart.prg_rom);
         // TODO: Find better way to run cpu and send info across threads
@@ -31,7 +32,7 @@ pub fn run_debugger(path: PathBuf) -> eframe::Result {
                 MEM_LEN,
                 min_addr + DEBUG_ADDRS,
             );
-            let memory = cpu.memory.raw_memory[min_addr..max_addr].to_vec();
+            let memory = cpu.memory.block(min_addr as u16, max_addr as u16).to_vec();
             tx.send(CpuSnapshot::from_cpu(&cpu, memory)).unwrap();
             thread::sleep(std::time::Duration::from_millis(1));
         }
@@ -62,7 +63,7 @@ struct CpuSnapshot {
 }
 
 impl CpuSnapshot {
-    fn from_cpu(data: &cpu::CPU, memory: Vec<u8>) -> CpuSnapshot {
+    fn from_cpu(data: &cpu::CPU<Bus>, memory: Vec<u8>) -> CpuSnapshot {
         Self {
             register_a: data.register_a,
             register_x: data.register_x,
