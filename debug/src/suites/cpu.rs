@@ -51,7 +51,7 @@ fn get_test_scenarios(path: String) -> Vec<TestScenario> {
     serialized
 }
 
-fn load_test_scenario(cpu: &mut cpu::CPU<Ram>, scenario: &TestScenario) {
+fn load_test_scenario(cpu: &mut cpu::Cpu<Ram>, scenario: &TestScenario) {
     cpu.pc = scenario.initial.pc;
     cpu.register_a = scenario.initial.a;
     cpu.register_x = scenario.initial.x;
@@ -64,7 +64,7 @@ fn load_test_scenario(cpu: &mut cpu::CPU<Ram>, scenario: &TestScenario) {
     }
 }
 
-fn verify_test_results(cpu: &cpu::CPU<Ram>, scenario: &TestScenario) {
+fn verify_test_results(cpu: &cpu::Cpu<Ram>, scenario: &TestScenario) {
     let expected = &scenario.r#final;
 
     assert_eq!(cpu.pc, expected.pc, "PC isn't correct!");
@@ -81,7 +81,7 @@ fn verify_test_results(cpu: &cpu::CPU<Ram>, scenario: &TestScenario) {
 
 // TODO: Add proper logging
 pub fn run_one_test(hex: u8) {
-    let mut cpu = cpu::CPU::<Ram>::default();
+    let mut cpu = cpu::Cpu::<Ram>::default();
     let path = format!("./tests/json/{:02x}.json", hex);
     let scenarios = get_test_scenarios(path);
 

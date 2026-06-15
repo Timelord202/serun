@@ -18,7 +18,7 @@ pub enum StatusFlag {
 }
 
 #[derive(Default)]
-pub struct CPU<'a, Mem: Memory> {
+pub struct Cpu<'a, Mem: Memory> {
     pub register_a: u8,
     pub register_x: u8,
     pub register_y: u8,
@@ -30,7 +30,7 @@ pub struct CPU<'a, Mem: Memory> {
     curr_instr: Option<&'a Instruction>,
 }
 
-impl<Mem: Memory> CPU<'_, Mem> {
+impl<Mem: Memory> Cpu<'_, Mem> {
     pub fn reset(&mut self) {
         self.register_a = 0;
         self.register_x = 0;
